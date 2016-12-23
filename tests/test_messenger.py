@@ -10,7 +10,7 @@ import aiohttp
 import json
 from sanic.utils import sanic_endpoint_test
 
-from messengerplatform import Messenger
+from boomerang import Messenger
 
 
 @pytest.fixture

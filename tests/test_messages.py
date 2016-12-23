@@ -5,7 +5,7 @@ test_messages
 Tests for classes in the messages module.
 """
 
-from messengerplatform import messages
+from boomerang import messages
 
 
 def test_message_received():

@@ -1,4 +1,4 @@
-* Facebook Messenger Platform for Python version:
+* Boomerang version:
 * Python version:
 * Operating System:
 

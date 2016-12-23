@@ -1,4 +1,4 @@
-Welcome to Facebook Messenger Platform for Python's documentation!
+Welcome to Boomerang's documentation!
 ======================================
 
 Contents:

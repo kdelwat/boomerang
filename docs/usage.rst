@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use Facebook Messenger Platform for Python in a project::
+To use Boomerang in a project::
 
-    import messengerplatform
+    import boomerang

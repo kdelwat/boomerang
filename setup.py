@@ -19,23 +19,23 @@ test_requirements = [
 ]
 
 setup(
-    name='messengerplatform',
+    name='boomerang',
     version='0.0.0',
     description="An asynchronous Python library for building services on the Facebook Messenger Platform",
     long_description=readme + '\n\n' + history,
     author="Cadel Watson",
     author_email='cadel@cadelwatson.com',
-    url='https://github.com/kdelwat/messengerplatform',
+    url='https://github.com/kdelwat/boomerang',
     packages=[
-        'messengerplatform',
+        'boomerang',
     ],
-    package_dir={'messengerplatform':
-                 'messengerplatform'},
+    package_dir={'boomerang':
+                 'boomerang'},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='messengerplatform',
+    keywords='boomerang',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

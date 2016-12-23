@@ -19,7 +19,7 @@ deploy:
   user: kdelwat
   true:
     condition: $TOXENV == py35
-    repo: kdelwat/messengerplatform
+    repo: kdelwat/boomerang
     tags: true
 env:
 - TOXENV=py35
