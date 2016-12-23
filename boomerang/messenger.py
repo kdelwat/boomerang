@@ -34,8 +34,9 @@ class Messenger:
             if request.method == 'GET':
                 server_response = self.register(request)
                 return server_response
+
             elif request.method == 'POST':
-                server_response = self.handle_webhook(request)
+                server_response = await self.handle_webhook(request)
                 return server_response
 
     def run(self, hostname='127.0.0.1', port=8000, debug=False):
@@ -82,7 +83,7 @@ class Messenger:
                 return response.text('Verification token did not match server',
                                      status=403)
 
-    def handle_webhook(self, request):
+    async def handle_webhook(self, request):
         '''Handles all POST requests made to the /webhook endpoint by the Messenger
         Platform.
 
@@ -113,14 +114,14 @@ class Messenger:
                     message_obj = messages.Message.from_json(user_id,
                                                              timestamp,
                                                              message['message'])
-                    self.message_received(message_obj)
+                    await self.message_received(message_obj)
 
                 else:
                     print(user_id, message)
 
         return response.text('Success', status=200)
 
-    def message_received(self, message):
+    async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
 
         Args:
