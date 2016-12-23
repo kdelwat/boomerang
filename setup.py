@@ -10,7 +10,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'sanic'
+    'sanic',
+    'aiohttp'
 ]
 
 test_requirements = [
