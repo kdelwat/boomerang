@@ -3,6 +3,8 @@ import uvloop
 from sanic import Sanic
 import sanic.response as response
 
+from . import messages
+
 
 class Messenger:
     '''The Messenger class is the base class that contains the Facebook Messenger
@@ -30,6 +32,9 @@ class Messenger:
         async def webhook(request):
             if request.method == 'GET':
                 server_response = self.register(request)
+                return server_response
+            elif request.method == 'POST':
+                server_response = self.handle_webhook(request)
                 return server_response
 
     def run(self, hostname='127.0.0.1', port=8000, debug=False):
@@ -63,3 +68,43 @@ class Messenger:
             else:
                 return response.text('Verification token did not match server',
                                      status=403)
+
+    def handle_webhook(self, request):
+        '''Handles all POST requests made to the /webhook endpoint by the Messenger
+        Platform. The request is formatted and delegated to the relevant
+        user-implementable event functions.
+
+        :param request: A request object passed by the Sanic server.
+
+        '''
+        # The API provides a list of events inside of the 'entry' list
+        for event in request.json['entry']:
+
+            # Inside the event is a list of messages, under 'messaging'
+            for message in event['messaging']:
+
+                # Isolate the User ID and timestamp, which are both present
+                # regardless of message type
+                user_id = int(message['sender']['id'])
+                timestamp = message['timestamp']
+
+                # Delegate received message event to user function
+                if 'message' in message:
+                    message_obj = messages.Message.from_json(user_id,
+                                                             timestamp,
+                                                             message['message'])
+                    self.message_received(message_obj)
+
+                else:
+                    print(user_id, message)
+
+        return response.text('Success', status=200)
+
+    def message_received(self, message):
+        '''Receives all messages sent to the bot, enclosed in the Message class.
+        The user defines this function with no return value.
+
+        :param message: A Message object.
+
+        '''
+        print('Handling received message')
