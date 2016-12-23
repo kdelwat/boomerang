@@ -2,17 +2,17 @@ import abc
 
 
 class BaseMessage(metaclass=abc.ABCMeta):
-    '''The BaseMessage class is the base class for all messages sent to the bot.
-    It handles the User ID and timestamp of the message. BaseMessage is
+    '''The base class for all messages sent to the bot.
+
+    This class handles the User ID and timestamp of all message. BaseMessage is
     subclassed by all other types of message, which must implement both the
     from_json() factory method and the to_json() method.
 
-    .. py:class:: BaseMessage(user_id, timestamp)
-
-        :param int user_id:   The Messenger ID of the user who triggered the
-                              message.
-        :param int timestamp: The timestamp (in milliseconds since epoch) of
-                              the message.
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message.
 
     '''
     def __init__(self, user_id, timestamp):
@@ -29,23 +29,20 @@ class BaseMessage(metaclass=abc.ABCMeta):
 
 
 class Message(BaseMessage):
-    '''The Message class holds Message Received events.
+    '''A class holding Message Received events.
 
-    .. py:class:: Message(user_id, timestamp, text='', attachments=[],
-                          quick_reply=None, message_id=None,
-                          sequence_position=None)
-
-        :param int user_id:   The Messenger ID of the user who triggered the
-                              message.
-        :param int timestamp: The timestamp (in milliseconds since epoch) of
-                              the message.
-        :param str text: The text of the message.
-        :param list attachments: A list of Attachment objects.
-        :param QuickReply quick_reply: A QuickReply holding a payload set by
-                                       the bot for quick replies.
-        :param str message_id: The Messenger ID of the message.
-        :param int sequence_position: The position of the message in the
-                                      conversation sequence.
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message.
+        text: A string representing the text of the message.
+        attachments: A list of Attachment objects.
+        quick_reply: A QuickReply holding a payload set by
+                     the bot for quick replies.
+        message_id: An integer Messenger ID of the message.
+        sequence_position: An integer position of the message in the
+                           conversation sequence.
 
     '''
 
@@ -61,15 +58,18 @@ class Message(BaseMessage):
 
     @classmethod
     def from_json(cls, user_id, timestamp, json):
-        '''Factory that builds a Message object from JSON provided by the
-        API.
+        '''Builds a Message object from JSON provided by the API.
 
-        :param int user_id: The Messenger ID of the user who triggered the
-                            message.
-        :param int timestamp: The timestamp (in milliseconds since epoch) of
-                              the message.
-        :param dict json: A JSON representation that is converted into the
-                          Message object.
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    message.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the message.
+            json: A dict containing the JSON representation that is converted
+                  into the Message object.
+
+        Returns:
+            A Message object.
 
         '''
         # Convert any quick reply to a Quick Reply object
@@ -98,13 +98,12 @@ class Message(BaseMessage):
 
 
 class MediaAttachment(BaseMessage):
-    '''The MediaAttachment class holds media attachments.
+    '''A class holding media attachments.
 
-    .. py:class:: MediaAttachment(media_type, url)
-
-        :param str media_type: The type of the attachment. Can be one of
-                               'image', 'audio', 'video', or 'file'.
-        :param str url: The url of the media.
+    Attributes:
+        media_type: The type of the attachment. Can be one of
+                    'image', 'audio', 'video', or 'file'.
+        url: The url of the media as a string.
 
     '''
 
@@ -114,11 +113,14 @@ class MediaAttachment(BaseMessage):
 
     @classmethod
     def from_json(cls, json):
-        '''Factory that builds a MediaAttachment object from JSON provided by the
-        API.
+        '''Builds a MediaAttachment object from JSON provided by the API.
 
-        :param dict json: A JSON representation that is converted into the
-                          MediaAttachment object.
+        Args:
+            json: A dict containing the JSON representation that is converted
+                  into the MediaAttachment object.
+
+        Returns:
+            A MediaAttachment object.
 
         '''
         return cls(json['type'], json['payload']['url'])
@@ -128,12 +130,11 @@ class MediaAttachment(BaseMessage):
 
 
 class LocationAttachment(BaseMessage):
-    '''The LocationAttachment class holds location attachments.
+    '''A class holding location attachments.
 
-    .. py:class:: LocationAttachment(latitude, longitude)
-
-        :param float latitude: The latitude of the location.
-        :param float longitude: The longitude of the location.
+    Attributes:
+        latitude: A float of the latitude of the location.
+        longitude: A float of the longitude of the location.
 
     '''
 
@@ -143,11 +144,14 @@ class LocationAttachment(BaseMessage):
 
     @classmethod
     def from_json(cls, json):
-        '''Factory that builds a LocationAttachment object from JSON provided
-        by the API.
+        '''Builds a LocationAttachment object from JSON provided by the API.
 
-        :param dict json: A JSON representation that is converted into the
-                          LocationAttachment object.
+        Args:
+            json: A dict containing the JSON representation that is converted
+                  into the LocationAttachment object.
+
+        Returns:
+            A LocationAttachment object.
 
         '''
         return cls(json['payload']['coordinates']['lat'],
@@ -158,11 +162,10 @@ class LocationAttachment(BaseMessage):
 
 
 class QuickReply:
-    '''The QuickReply class holds a developer-specified payload.
+    '''A class holding a developer-specified quick reply payload.
 
-    .. py:class:: QuickReply(payload)
-
-        :param str payload: The payload of the quick reply returned by the API.
+    Attributes:
+        payload: The string payload of the quick reply returned by the API.
 
     '''
 
@@ -171,11 +174,14 @@ class QuickReply:
 
     @classmethod
     def from_json(cls, json):
-        '''Factory that builds a QuickReply object from JSON provided
-        by the API.
+        '''Builds a QuickReply object from JSON provided by the API.
 
-        :param dict json: A JSON representation that is converted into the
-                          QuickAttachment object.
+        Args:
+            json: A dict containing the JSON representation that is converted
+                  into the QuickAttachment object.
+
+        Returns:
+            A QuickReply object.
 
         '''
         return cls(json['payload'])
