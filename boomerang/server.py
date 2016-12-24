@@ -3,7 +3,7 @@ import uvloop
 from sanic import Sanic
 import sanic.response as response
 
-from . import messages
+from . import events
 
 
 class Messenger:
@@ -112,15 +112,15 @@ class Messenger:
                 # Each message type has an identifier, which Facebook uses to
                 # signify the type; a class, for holding the message; and a
                 # handler function which is implemented by the user.
-                message_types = [('message', messages.Message,
+                message_types = [('message', events.MessageReceived,
                                   self.message_received),
-                                 ('delivery', messages.MessageDelivered,
+                                 ('delivery', events.MessageDelivered,
                                   self.message_delivered),
-                                 ('read', messages.MessageRead,
+                                 ('read', events.MessageRead,
                                   self.message_read),
-                                 ('postback', messages.Postback,
+                                 ('postback', events.Postback,
                                   self.postback),
-                                 ('referral', messages.Referral,
+                                 ('referral', events.Referral,
                                   self.referral)]
 
                 # Loop through the message types. If one is found, create the
@@ -142,7 +142,7 @@ class Messenger:
         '''Handles all 'message received' events sent to the bot.
 
         Args:
-            message: A Message object containing the received message.
+            message: A MessageReceived object containing the received message.
 
         Returns:
             None. The message should be completely handled within this

@@ -1,11 +1,11 @@
 """
-test_messages
+test_events
 ----------------------------------
 
-Tests for classes in the messages module.
+Tests for classes in the events module.
 """
 
-from boomerang import messages
+from boomerang import events
 
 
 def test_message_received():
@@ -18,7 +18,8 @@ def test_message_received():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Message.from_json(user_id, timestamp, json_data)
+    message_object = events.MessageReceived.from_json(user_id, timestamp,
+                                                      json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
@@ -45,13 +46,14 @@ def test_message_received_with_attachments():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Message.from_json(user_id, timestamp, json_data)
+    message_object = events.MessageReceived.from_json(user_id, timestamp,
+                                                      json_data)
 
     assert len(message_object.attachments) == 2
     assert isinstance(message_object.attachments[0],
-                      messages.MediaAttachment)
+                      events.MediaAttachment)
     assert isinstance(message_object.attachments[1],
-                      messages.LocationAttachment)
+                      events.LocationAttachment)
 
 
 def test_message_received_with_quickreply():
@@ -67,9 +69,10 @@ def test_message_received_with_quickreply():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Message.from_json(user_id, timestamp, json_data)
+    message_object = events.MessageReceived.from_json(user_id, timestamp,
+                                                      json_data)
 
-    assert isinstance(message_object.quick_reply, messages.QuickReply)
+    assert isinstance(message_object.quick_reply, events.QuickReply)
     assert message_object.quick_reply.payload == 'dummy_payload'
 
 
@@ -85,9 +88,8 @@ def test_message_delivered():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.MessageDelivered.from_json(user_id,
-                                                         timestamp,
-                                                         json_data)
+    message_object = events.MessageDelivered.from_json(user_id, timestamp,
+                                                       json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
@@ -108,9 +110,8 @@ def test_message_read():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.MessageRead.from_json(user_id,
-                                                    timestamp,
-                                                    json_data)
+    message_object = events.MessageRead.from_json(user_id, timestamp,
+                                                  json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
@@ -127,9 +128,7 @@ def test_postback():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Postback.from_json(user_id,
-                                                 timestamp,
-                                                 json_data)
+    message_object = events.Postback.from_json(user_id, timestamp, json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
@@ -150,15 +149,13 @@ def test_postback_with_referral():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Postback.from_json(user_id,
-                                                 timestamp,
-                                                 json_data)
+    message_object = events.Postback.from_json(user_id, timestamp, json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
     assert message_object.payload == 'dummy_payload'
 
-    assert isinstance(message_object.referral, messages.Referral)
+    assert isinstance(message_object.referral, events.Referral)
     assert message_object.referral.data == 'dummy_referral_data'
 
 
@@ -173,9 +170,7 @@ def test_referral():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.Referral.from_json(user_id,
-                                                 timestamp,
-                                                 json_data)
+    message_object = events.Referral.from_json(user_id, timestamp, json_data)
 
     assert message_object.user_id == user_id
     assert message_object.timestamp == timestamp
@@ -193,9 +188,8 @@ def test_message_delivered_with_no_message_ids():
     user_id = 12345
     timestamp = 1234567890
 
-    message_object = messages.MessageDelivered.from_json(user_id,
-                                                         timestamp,
-                                                         json_data)
+    message_object = events.MessageDelivered.from_json(user_id, timestamp,
+                                                       json_data)
 
     assert isinstance(message_object.message_ids, list)
     assert len(message_object.message_ids) == 0
@@ -208,7 +202,7 @@ def test_attachments():
     media_json_data = {'payload': {'url': 'http://www.google.com'},
                        'type': 'image'}
 
-    attachment_object = messages.MediaAttachment.from_json(media_json_data)
+    attachment_object = events.MediaAttachment.from_json(media_json_data)
     assert attachment_object.media_type == 'image'
     assert attachment_object.url == 'http://www.google.com'
 
@@ -218,7 +212,7 @@ def test_attachments():
                           'payload': {'coordinates': {'long': 38.8976763,
                                                       'lat': -77.0387185}}}
 
-    location_object = messages.LocationAttachment.from_json(location_json_data)
+    location_object = events.LocationAttachment.from_json(location_json_data)
     assert location_object.latitude == -77.0387185
     assert location_object.longitude == 38.8976763
 
@@ -229,5 +223,5 @@ def test_quickreply():
     '''
     json_data = {'payload': 'dummy_payload'}
 
-    quickreply_object = messages.QuickReply.from_json(json_data)
+    quickreply_object = events.QuickReply.from_json(json_data)
     assert quickreply_object.payload == 'dummy_payload'

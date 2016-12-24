@@ -1,5 +1,5 @@
 """
-test_messenger
+test_server
 ----------------------------------
 
 Tests for the Messenger class.
@@ -10,7 +10,7 @@ import aiohttp
 import json
 from sanic.utils import sanic_endpoint_test
 
-from boomerang import Messenger
+from boomerang.server import Messenger
 
 
 @pytest.fixture

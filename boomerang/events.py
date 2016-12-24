@@ -1,46 +1,17 @@
-import abc
-
-
-class BaseMessage(metaclass=abc.ABCMeta):
-    '''The base class for all messages sent to the bot.
-
-    This class handles the User ID and timestamp of all message. BaseMessage is
-    subclassed by all other types of message, which must implement both the
-    from_json() factory method and the to_json() method.
-
-    Attributes:
-        user_id: An integer Messenger ID of the user who triggered the
-                 message.
-        timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message.
-
-    '''
-    def __init__(self, user_id, timestamp):
-        self.user_id = user_id
-        self.timestamp = timestamp
-
-    @abc.abstractclassmethod
-    def from_json(cls, json):
-        return
-
-    def to_json(self):
-        return
-
-
-class Message(BaseMessage):
+class MessageReceived():
     '''A class holding Message Received events.
 
     Attributes:
         user_id: An integer Messenger ID of the user who triggered the
-                 message.
+                 event.
         timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message.
+                   the event.
         text: A string representing the text of the message.
         attachments: A list of Attachment objects.
         quick_reply: A QuickReply holding a payload set by
                      the bot for quick replies.
         message_id: An integer Messenger ID of the message.
-        sequence_position: An integer position of the message in the
+        sequence_position: An integer position of the event in the
                            conversation sequence.
 
     '''
@@ -57,18 +28,18 @@ class Message(BaseMessage):
 
     @classmethod
     def from_json(cls, user_id, timestamp, json):
-        '''Builds a Message object from JSON provided by the API.
+        '''Builds a MessageReceived object from JSON provided by the API.
 
         Args:
             user_id: An integer Messenger ID of the user who triggered the
-                    message.
+                    event.
             timestamp: An integer timestamp (in milliseconds since epoch) of
-                    the message.
+                    the event.
             json: A dict containing the JSON representation that is converted
-                  into the Message object.
+                  into the MessageReceived object.
 
         Returns:
-            A Message object.
+            A MessageReceived object.
 
         '''
         # Convert any quick reply to a Quick Reply object
@@ -92,11 +63,8 @@ class Message(BaseMessage):
                    attachments=attachments, quick_reply=quick_reply,
                    message_id=json['mid'], sequence_position=json['seq'])
 
-    def to_json(self):
-        return
 
-
-class MediaAttachment(BaseMessage):
+class MediaAttachment:
     '''A class holding media attachments.
 
     Attributes:
@@ -128,7 +96,7 @@ class MediaAttachment(BaseMessage):
         return
 
 
-class LocationAttachment(BaseMessage):
+class LocationAttachment:
     '''A class holding location attachments.
 
     Attributes:
@@ -155,9 +123,6 @@ class LocationAttachment(BaseMessage):
         '''
         return cls(json['payload']['coordinates']['lat'],
                    json['payload']['coordinates']['long'])
-
-    def to_json(self):
-        return
 
 
 class QuickReply:
@@ -186,19 +151,19 @@ class QuickReply:
         return cls(json['payload'])
 
 
-class MessageDelivered(BaseMessage):
+class MessageDelivered():
     '''A class holding Message Delivered events.
 
     Attributes:
         user_id: An integer Messenger ID of the user who triggered the
-                 message.
+                 event.
         timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message event.
+                   the event.
         watermark: An integer timestamp. All messages with a timestamp before
-                   this message are guaranteed to have been delivered.
+                   this watermark are guaranteed to have been delivered.
         message_ids: A list of string Messenger IDs of the delivered
                      messages.
-        sequence_position: An integer position of the message in the
+        sequence_position: An integer position of the event in the
                            conversation sequence.
 
     '''
@@ -217,9 +182,9 @@ class MessageDelivered(BaseMessage):
 
         Args:
             user_id: An integer Messenger ID of the user who triggered the
-                    message.
+                    event.
             timestamp: An integer timestamp (in milliseconds since epoch) of
-                    the message.
+                    the event.
             json: A dict containing the JSON representation that is converted
                   into the MessageDelivered object.
 
@@ -235,16 +200,16 @@ class MessageDelivered(BaseMessage):
                    json['seq'])
 
 
-class MessageRead(BaseMessage):
+class MessageRead():
     '''A class holding Message Delivered events.
 
     Attributes:
         user_id: An integer Messenger ID of the user who triggered the
-                 message.
+                 event.
         timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message event.
+                   the event.
         watermark: An integer timestamp. All messages with a timestamp before
-                   this message are guaranteed to have been read.
+                   this watermark are guaranteed to have been read.
         sequence_position: An integer position of the event in the
                            conversation sequence.
 
@@ -262,9 +227,9 @@ class MessageRead(BaseMessage):
 
         Args:
             user_id: An integer Messenger ID of the user who triggered the
-                    message.
+                    event.
             timestamp: An integer timestamp (in milliseconds since epoch) of
-                    the message.
+                    the event.
             json: A dict containing the JSON representation that is converted
                   into the MessageRead object.
 
@@ -276,14 +241,14 @@ class MessageRead(BaseMessage):
         return cls(user_id, timestamp, json['watermark'], json['seq'])
 
 
-class Postback(BaseMessage):
+class Postback():
     '''A class holding Postback events.
 
     Attributes:
         user_id: An integer Messenger ID of the user who triggered the
-                 message.
+                 event.
         timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message event.
+                   the event.
         payload: A string defined by the bot when creating the postback button.
         referral: An optional Referral object.
 
@@ -301,9 +266,9 @@ class Postback(BaseMessage):
 
         Args:
             user_id: An integer Messenger ID of the user who triggered the
-                    message.
+                    event.
             timestamp: An integer timestamp (in milliseconds since epoch) of
-                    the message.
+                    the event.
             json: A dict containing the JSON representation that is converted
                   into the MessageRead object.
 
@@ -321,14 +286,14 @@ class Postback(BaseMessage):
         return cls(user_id, timestamp, json['payload'], referral)
 
 
-class Referral(BaseMessage):
+class Referral():
     '''A class holding Referral events.
 
     Attributes:
         user_id: An integer Messenger ID of the user who triggered the
-                 message.
+                 event.
         timestamp: An integer timestamp (in milliseconds since epoch) of
-                   the message event.
+                   the event.
         data: A string passed by the referral link.
 
     '''
@@ -344,9 +309,9 @@ class Referral(BaseMessage):
 
         Args:
             user_id: An integer Messenger ID of the user who triggered the
-                    message.
+                    event.
             timestamp: An integer timestamp (in milliseconds since epoch) of
-                    the message.
+                    the event.
             json: A dict containing the JSON representation that is converted
                   into the Referral object.
 
