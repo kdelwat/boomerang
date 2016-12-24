@@ -233,3 +233,44 @@ class MessageDelivered(BaseMessage):
 
         return cls(user_id, timestamp, json['watermark'], message_ids,
                    json['seq'])
+
+
+class MessageRead(BaseMessage):
+    '''A class holding Message Delivered events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message event.
+        watermark: An integer timestamp. All messages with a timestamp before
+                   this message are guaranteed to have been read.
+        sequence_position: An integer position of the event in the
+                           conversation sequence.
+
+    '''
+
+    def __init__(self, user_id, timestamp, watermark, sequence_position):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.watermark = watermark
+        self.sequence_position = sequence_position
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds a MessageRead object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    message.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the message.
+            json: A dict containing the JSON representation that is converted
+                  into the MessageRead object.
+
+        Returns:
+            A MessageRead object.
+
+        '''
+
+        return cls(user_id, timestamp, json['watermark'], json['seq'])

@@ -121,6 +121,13 @@ class Messenger:
                                                                       timestamp,
                                                                       message['delivery'])
                     await self.message_delivered(message_obj)
+
+                elif 'read' in message:
+                    message_obj = messages.MessageRead.from_json(user_id,
+                                                                 timestamp,
+                                                                 message['read'])
+                    await self.message_read(message_obj)
+
                 else:
                     print(user_id, message)
 
@@ -152,3 +159,17 @@ class Messenger:
 
         '''
         print('Handling delivered message')
+
+    async def message_read(self, message_read):
+        '''Handles all 'message read' events sent to the bot.
+
+        Args:
+            message_read: A MessageRead object containing the
+                          received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling read message')

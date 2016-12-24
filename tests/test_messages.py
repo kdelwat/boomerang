@@ -98,6 +98,26 @@ def test_message_delivered():
     assert message_object.message_ids[0] == 'mid.1458668856218:ed81099e15d3f4f233'
 
 
+def test_message_read():
+    '''Tests the to_json functionality of the MessageRead class.
+
+    '''
+    json_data = {'watermark': 1111111111,
+                 'seq': 30}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.MessageRead.from_json(user_id,
+                                                    timestamp,
+                                                    json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.watermark == json_data['watermark']
+    assert message_object.sequence_position == json_data['seq']
+
+
 def test_message_delivered_with_no_message_ids():
     '''Tests the to_json functionality of the MessageDelivered class,
     when the array of message IDs is missing.
