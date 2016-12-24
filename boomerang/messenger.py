@@ -109,39 +109,32 @@ class Messenger:
                 user_id = int(message['sender']['id'])
                 timestamp = message['timestamp']
 
-                # Delegate message events to user handler function
-                if 'message' in message:
-                    message_obj = messages.Message.from_json(user_id,
-                                                             timestamp,
-                                                             message['message'])
-                    await self.message_received(message_obj)
+                # Each message type has an identifier, which Facebook uses to
+                # signify the type; a class, for holding the message; and a
+                # handler function which is implemented by the user.
+                message_types = [('message', messages.Message,
+                                  self.message_received),
+                                 ('delivery', messages.MessageDelivered,
+                                  self.message_delivered),
+                                 ('read', messages.MessageRead,
+                                  self.message_read),
+                                 ('postback', messages.Postback,
+                                  self.postback),
+                                 ('referral', messages.Referral,
+                                  self.referral)]
 
-                elif 'delivery' in message:
-                    message_obj = messages.MessageDelivered.from_json(user_id,
-                                                                      timestamp,
-                                                                      message['delivery'])
-                    await self.message_delivered(message_obj)
+                # Loop through the message types. If one is found, create the
+                # relevant message object and handle it. Then break from the
+                # loop as there can only be one type present at a time.
+                for message_type in message_types:
+                    identifier, message_class, handler = message_type
 
-                elif 'read' in message:
-                    message_obj = messages.MessageRead.from_json(user_id,
-                                                                 timestamp,
-                                                                 message['read'])
-                    await self.message_read(message_obj)
-
-                elif 'postback' in message:
-                    message_obj = messages.Postback.from_json(user_id,
-                                                                 timestamp,
-                                                                 message['postback'])
-                    await self.postback(message_obj)
-
-                elif 'referral' in message:
-                    message_obj = messages.Referral.from_json(user_id,
-                                                                 timestamp,
-                                                                 message['referral'])
-                    await self.referral(message_obj)
-
-                else:
-                    print(user_id, message)
+                    if identifier in message:
+                        event = message_class.from_json(user_id,
+                                                        timestamp,
+                                                        message[identifier])
+                        await handler(event)
+                        break
 
         return response.text('Success', status=200)
 
