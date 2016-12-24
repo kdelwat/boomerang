@@ -118,6 +118,70 @@ def test_message_read():
     assert message_object.sequence_position == json_data['seq']
 
 
+def test_postback():
+    '''Tests the to_json functionality of the Postback class.
+
+    '''
+    json_data = {'payload': 'dummy_payload'}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.Postback.from_json(user_id,
+                                                 timestamp,
+                                                 json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.payload == 'dummy_payload'
+    assert message_object.referral is None
+
+
+def test_postback_with_referral():
+    '''Tests the to_json functionality of the Postback class, when a referral is
+    included.
+
+    '''
+    json_data = {'payload': 'dummy_payload',
+                 'referral': {'ref': 'dummy_referral_data',
+                              'source': 'SHORTLINK',
+                              'type': 'OPEN_THREAD'}}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.Postback.from_json(user_id,
+                                                 timestamp,
+                                                 json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.payload == 'dummy_payload'
+
+    assert isinstance(message_object.referral, messages.Referral)
+    assert message_object.referral.data == 'dummy_referral_data'
+
+
+def test_referral():
+    '''Tests the to_json functionality of the Referral class.
+
+    '''
+    json_data = {'ref': 'dummy_referral_data',
+                 'source': 'SHORTLINK',
+                 'type': 'OPEN_THREAD'}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.Referral.from_json(user_id,
+                                                 timestamp,
+                                                 json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.data == 'dummy_referral_data'
+
+
 def test_message_delivered_with_no_message_ids():
     '''Tests the to_json functionality of the MessageDelivered class,
     when the array of message IDs is missing.

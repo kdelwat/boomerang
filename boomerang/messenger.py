@@ -128,6 +128,18 @@ class Messenger:
                                                                  message['read'])
                     await self.message_read(message_obj)
 
+                elif 'postback' in message:
+                    message_obj = messages.Postback.from_json(user_id,
+                                                                 timestamp,
+                                                                 message['postback'])
+                    await self.postback(message_obj)
+
+                elif 'referral' in message:
+                    message_obj = messages.Referral.from_json(user_id,
+                                                                 timestamp,
+                                                                 message['referral'])
+                    await self.referral(message_obj)
+
                 else:
                     print(user_id, message)
 
@@ -173,3 +185,31 @@ class Messenger:
 
         '''
         print('Handling read message')
+
+    async def postback(self, postback):
+        '''Handles all 'postback' events sent to the bot.
+
+        Args:
+            postback: A Postback object containing the
+                      received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling postback')
+
+    async def referral(self, referral):
+        '''Handles all 'referral' events sent to the bot.
+
+        Args:
+            referral: A Referral object containing the
+                      received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling referral')

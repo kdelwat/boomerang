@@ -116,3 +116,71 @@ def test_message_read(bot):
                                             uri='/webhook',
                                             data=message_json)
     assert response.status == 200
+
+
+def test_postback(bot):
+    '''Makes a POST request simulating a postback event to the bot,
+    checking that the bot responds with the appropriate status.'''
+    message = {'entry': [{'id': '233231370449158',
+                          'messaging': [{'postback': {'payload': 'dummy_payload'},
+                                         'recipient': {'id': '233231370449158'},
+                                         'sender': {'id': '1297601746979209'},
+                                         'timestamp': 1482375186449}],
+                          'time': 1482375186497}],
+               'object': 'page'}
+
+    message_json = json.dumps(message)
+
+    request, response = sanic_endpoint_test(bot._server,
+                                            method='post',
+                                            uri='/webhook',
+                                            data=message_json)
+    assert response.status == 200
+
+
+def test_postback_with_referral(bot):
+    '''Makes a POST request simulating a postback event to the bot, where a
+    referral is included, checking that the bot responds with the appropriate
+    status.
+
+    '''
+    message = {'entry': [{'id': '233231370449158',
+                          'messaging': [{'postback': {'payload': 'dummy_payload',
+                                                      'referral': {'ref': 'dummy_referral_data',
+                                                                   'source': 'SHORTLINK',
+                                                                   'type': 'OPEN_THREAD'}},
+                                         'recipient': {'id': '233231370449158'},
+                                         'sender': {'id': '1297601746979209'},
+                                         'timestamp': 1482375186449}],
+                          'time': 1482375186497}],
+               'object': 'page'}
+
+    message_json = json.dumps(message)
+
+    request, response = sanic_endpoint_test(bot._server,
+                                            method='post',
+                                            uri='/webhook',
+                                            data=message_json)
+    assert response.status == 200
+
+
+def test_referral(bot):
+    '''Makes a POST request simulating a referral event to the bot,
+    checking that the bot responds with the appropriate status.'''
+    message = {'entry': [{'id': '233231370449158',
+                          'messaging': [{'referral': {'ref': 'dummy_referral_data',
+                                                      'source': 'SHORTLINK',
+                                                      'type': 'OPEN_THREAD'},
+                                         'recipient': {'id': '233231370449158'},
+                                         'sender': {'id': '1297601746979209'},
+                                         'timestamp': 1482375186449}],
+                          'time': 1482375186497}],
+               'object': 'page'}
+
+    message_json = json.dumps(message)
+
+    request, response = sanic_endpoint_test(bot._server,
+                                            method='post',
+                                            uri='/webhook',
+                                            data=message_json)
+    assert response.status == 200

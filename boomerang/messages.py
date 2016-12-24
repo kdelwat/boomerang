@@ -274,3 +274,85 @@ class MessageRead(BaseMessage):
         '''
 
         return cls(user_id, timestamp, json['watermark'], json['seq'])
+
+
+class Postback(BaseMessage):
+    '''A class holding Postback events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message event.
+        payload: A string defined by the bot when creating the postback button.
+        referral: An optional Referral object.
+
+    '''
+
+    def __init__(self, user_id, timestamp, payload, referral=None):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.payload = payload
+        self.referral = referral
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds a Postback object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    message.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the message.
+            json: A dict containing the JSON representation that is converted
+                  into the MessageRead object.
+
+        Returns:
+            A Postback object.
+
+        '''
+
+        # Convert a referral to a Referral object if present
+        if 'referral' in json:
+            referral = Referral.from_json(user_id, timestamp, json['referral'])
+        else:
+            referral = None
+
+        return cls(user_id, timestamp, json['payload'], referral)
+
+
+class Referral(BaseMessage):
+    '''A class holding Referral events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message event.
+        data: A string passed by the referral link.
+
+    '''
+
+    def __init__(self, user_id, timestamp, data):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.data = data
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds a Referral object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    message.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the message.
+            json: A dict containing the JSON representation that is converted
+                  into the Referral object.
+
+        Returns:
+            A Referral object.
+
+        '''
+
+        return cls(user_id, timestamp, json['ref'])
