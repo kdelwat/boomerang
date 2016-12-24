@@ -72,3 +72,26 @@ def test_message_received(bot):
                                             uri='/webhook',
                                             data=message_json)
     assert response.status == 200
+
+
+def test_message_delivered(bot):
+    '''Makes a POST request simulating a message delivered event to the bot,
+    checking that the bot responds with the appropriate status.'''
+    message = {'entry': [{'id': '233231370449158',
+                          'messaging': [{'delivery': {'mids': ['mid.1458668856218:ed81099e15d3f4f233',
+                                                               'mid.1458668856218:ed81099e15d3f4f234'],
+                                                      'watermark': 1111111111,
+                                                      'seq': 30},
+                                         'recipient': {'id': '233231370449158'},
+                                         'sender': {'id': '1297601746979209'},
+                                         'timestamp': 1482375186449}],
+                          'time': 1482375186497}],
+               'object': 'page'}
+
+    message_json = json.dumps(message)
+
+    request, response = sanic_endpoint_test(bot._server,
+                                            method='post',
+                                            uri='/webhook',
+                                            data=message_json)
+    assert response.status == 200

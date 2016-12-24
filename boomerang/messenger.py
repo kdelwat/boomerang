@@ -109,13 +109,18 @@ class Messenger:
                 user_id = int(message['sender']['id'])
                 timestamp = message['timestamp']
 
-                # Delegate received message event to user function
+                # Delegate message events to user handler function
                 if 'message' in message:
                     message_obj = messages.Message.from_json(user_id,
                                                              timestamp,
                                                              message['message'])
                     await self.message_received(message_obj)
 
+                elif 'delivery' in message:
+                    message_obj = messages.MessageDelivered.from_json(user_id,
+                                                                      timestamp,
+                                                                      message['delivery'])
+                    await self.message_delivered(message_obj)
                 else:
                     print(user_id, message)
 
@@ -128,7 +133,22 @@ class Messenger:
             message: A Message object containing the received message.
 
         Returns:
-            None. The message should be completely handled within this message.
+            None. The message should be completely handled within this
+            function.
 
         '''
         print('Handling received message')
+
+    async def message_delivered(self, message_delivered):
+        '''Handles all 'message delivered' events sent to the bot.
+
+        Args:
+            message_delivered: A MessageDelivered object containing the
+                               received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling delivered message')

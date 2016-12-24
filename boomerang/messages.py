@@ -23,7 +23,6 @@ class BaseMessage(metaclass=abc.ABCMeta):
     def from_json(cls, json):
         return
 
-    @abc.abstractmethod
     def to_json(self):
         return
 
@@ -185,3 +184,52 @@ class QuickReply:
 
         '''
         return cls(json['payload'])
+
+
+class MessageDelivered(BaseMessage):
+    '''A class holding Message Delivered events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 message.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the message event.
+        watermark: An integer timestamp. All messages with a timestamp before
+                   this message are guaranteed to have been delivered.
+        message_ids: A list of string Messenger IDs of the delivered
+                     messages.
+        sequence_position: An integer position of the message in the
+                           conversation sequence.
+
+    '''
+
+    def __init__(self, user_id, timestamp, watermark, message_ids,
+                 sequence_position):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.watermark = watermark
+        self.message_ids = message_ids
+        self.sequence_position = sequence_position
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds a MessageDelivered object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    message.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the message.
+            json: A dict containing the JSON representation that is converted
+                  into the MessageDelivered object.
+
+        Returns:
+            A MessageDelivered object.
+
+        '''
+
+        # If message IDs aren't present, store an empty list.
+        message_ids = json.get('mids', [])
+
+        return cls(user_id, timestamp, json['watermark'], message_ids,
+                   json['seq'])

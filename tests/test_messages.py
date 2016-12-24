@@ -73,6 +73,50 @@ def test_message_received_with_quickreply():
     assert message_object.quick_reply.payload == 'dummy_payload'
 
 
+def test_message_delivered():
+    '''Tests the to_json functionality of the MessageDelivered class.
+
+    '''
+    json_data = {'mids': ['mid.1458668856218:ed81099e15d3f4f233',
+                          'mid.1458668856218:ed81099e15d3f4f234'],
+                 'watermark': 1111111111,
+                 'seq': 30}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.MessageDelivered.from_json(user_id,
+                                                         timestamp,
+                                                         json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.watermark == json_data['watermark']
+    assert message_object.sequence_position == json_data['seq']
+
+    assert isinstance(message_object.message_ids, list)
+    assert message_object.message_ids[0] == 'mid.1458668856218:ed81099e15d3f4f233'
+
+
+def test_message_delivered_with_no_message_ids():
+    '''Tests the to_json functionality of the MessageDelivered class,
+    when the array of message IDs is missing.
+
+    '''
+    json_data = {'watermark': 1111111111,
+                 'seq': 30}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = messages.MessageDelivered.from_json(user_id,
+                                                         timestamp,
+                                                         json_data)
+
+    assert isinstance(message_object.message_ids, list)
+    assert len(message_object.message_ids) == 0
+
+
 def test_attachments():
     '''Tests the to_json and from_json functionality of the attachment classes.
 
