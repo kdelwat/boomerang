@@ -16,8 +16,8 @@ class MessageReceived():
 
     '''
 
-    def __init__(self, user_id, timestamp, text='', attachments=[],
-                 quick_reply=None, message_id=None, sequence_position=None):
+    def __init__(self, user_id, timestamp, text, attachments,
+                 quick_reply, message_id, sequence_position):
         self.user_id = user_id
         self.timestamp = timestamp
         self.text = text
