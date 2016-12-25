@@ -321,3 +321,87 @@ class Referral():
         '''
 
         return cls(user_id, timestamp, json['ref'])
+
+
+class OptIn():
+    '''A class holding OptIn events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 event.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the event.
+        data: A string passed by the 'Send to Messenger' plugin.
+
+    '''
+
+    def __init__(self, user_id, timestamp, data):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.data = data
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds an OptIn object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    event.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the event.
+            json: A dict containing the JSON representation that is converted
+                  into the OptIn object.
+
+        Returns:
+            An OptIn object.
+
+        '''
+
+        return cls(user_id, timestamp, json['ref'])
+
+
+class AccountLink():
+    '''A class holding AccountLink events.
+
+    Attributes:
+        user_id: An integer Messenger ID of the user who triggered the
+                 event.
+        timestamp: An integer timestamp (in milliseconds since epoch) of
+                   the event.
+        status: A string representing the account action. Can be 'linked' or
+                'unlinked'.
+        authorization_code: An authorization code provided when status is
+                            'linked'. The code is defined by the user during
+                            the account linking process.
+
+    '''
+
+    def __init__(self, user_id, timestamp, status, authorization_code=None):
+        self.user_id = user_id
+        self.timestamp = timestamp
+        self.status = status
+        self.authorization_code = authorization_code
+
+    @classmethod
+    def from_json(cls, user_id, timestamp, json):
+        '''Builds an AccountLink object from JSON provided by the API.
+
+        Args:
+            user_id: An integer Messenger ID of the user who triggered the
+                    event.
+            timestamp: An integer timestamp (in milliseconds since epoch) of
+                    the event.
+            json: A dict containing the JSON representation that is converted
+                  into the AccountLink object.
+
+        Returns:
+            An AccountLink object.
+
+        '''
+
+        # If the account is being unlinked, no authorization code is provided.
+        if json['status'] == 'unlinked':
+            return cls(user_id, timestamp, json['status'])
+        else:
+            return cls(user_id, timestamp, json['status'],
+                       json['authorization_code'])

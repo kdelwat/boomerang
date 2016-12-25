@@ -177,6 +177,63 @@ def test_referral():
     assert message_object.data == 'dummy_referral_data'
 
 
+def test_optin():
+    '''Tests the to_json functionality of the OptIn class.
+
+    '''
+    json_data = {'ref': 'dummy_data'}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = events.OptIn.from_json(user_id, timestamp, json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.data == 'dummy_data'
+
+
+def test_account_unlinked():
+    '''Tests the to_json functionality of the AccountLink class, when
+    the account is being unlinked.
+
+    '''
+
+    json_data = {'status': 'unlinked'}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = events.AccountLink.from_json(user_id, timestamp,
+                                                  json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.status == 'unlinked'
+    assert message_object.authorization_code is None
+
+
+def test_account_linked():
+    '''Tests the to_json functionality of the AccountLink class, when
+    the account is being linked.
+
+    '''
+
+    json_data = {'status': 'linked',
+                 'authorization_code': 'dummy_authorization'}
+
+    user_id = 12345
+    timestamp = 1234567890
+
+    message_object = events.AccountLink.from_json(user_id, timestamp,
+                                                  json_data)
+
+    assert message_object.user_id == user_id
+    assert message_object.timestamp == timestamp
+    assert message_object.status == 'linked'
+    assert message_object.authorization_code == 'dummy_authorization'
+
+
 def test_message_delivered_with_no_message_ids():
     '''Tests the to_json functionality of the MessageDelivered class,
     when the array of message IDs is missing.

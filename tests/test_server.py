@@ -141,3 +141,20 @@ def test_referral(bot):
                'type': 'OPEN_THREAD'}
 
     assert message_handled_ok(bot._server, 'referral', message)
+
+
+def test_optin(bot):
+    '''Ensure the server responds with a 200 status to a plugin opt in event
+    sent by the API.'''
+    message = {'ref': 'dummy_data'}
+
+    assert message_handled_ok(bot._server, 'optin', message)
+
+
+def test_account_linking(bot):
+    '''Ensure the server responds with a 200 status to an account linking event
+    sent by the API.'''
+    message = {'status': 'linked',
+               'authorization_code': 'dummy_authorization'}
+
+    assert message_handled_ok(bot._server, 'account_linking', message)

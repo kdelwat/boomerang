@@ -121,7 +121,11 @@ class Messenger:
                                  ('postback', events.Postback,
                                   self.postback),
                                  ('referral', events.Referral,
-                                  self.referral)]
+                                  self.referral),
+                                 ('optin', events.OptIn,
+                                  self.opt_in),
+                                 ('account_linking', events.AccountLink,
+                                  self.account_link)]
 
                 # Loop through the message types. If one is found, create the
                 # relevant message object and handle it. Then break from the
@@ -206,3 +210,31 @@ class Messenger:
 
         '''
         print('Handling referral')
+
+    async def opt_in(self, opt_in):
+        '''Handles all 'opt in' events sent to the bot.
+
+        Args:
+            opt_in: An OptIn object containing the
+                    received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling opt in')
+
+    async def account_link(self, account_link):
+        '''Handles all 'account linking' events sent to the bot.
+
+        Args:
+            opt_in: An AccountLink object containing the
+                    received message.
+
+        Returns:
+            None. The message should be completely handled within this
+            function.
+
+        '''
+        print('Handling account linking')
