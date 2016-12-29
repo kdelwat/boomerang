@@ -72,7 +72,7 @@ def test_message_received_with_quickreply():
     message_object = events.MessageReceived.from_json(user_id, timestamp,
                                                       json_data)
 
-    assert isinstance(message_object.quick_reply, events.QuickReply)
+    assert isinstance(message_object.quick_reply, events.QuickReplyPayload)
     assert message_object.quick_reply.payload == 'dummy_payload'
 
 
@@ -275,10 +275,10 @@ def test_attachments():
 
 
 def test_quickreply():
-    '''Tests the from_json functionality of the QuickReply class.
+    '''Tests the from_json functionality of the QuickReplyPayload class.
 
     '''
     json_data = {'payload': 'dummy_payload'}
 
-    quickreply_object = events.QuickReply.from_json(json_data)
+    quickreply_object = events.QuickReplyPayload.from_json(json_data)
     assert quickreply_object.payload == 'dummy_payload'

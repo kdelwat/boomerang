@@ -8,7 +8,7 @@ class MessageReceived():
                    the event.
         text: A string representing the text of the message.
         attachments: A list of Attachment objects.
-        quick_reply: A QuickReply holding a payload set by
+        quick_reply: A QuickReplyPayload holding a payload set by
                      the bot for quick replies.
         message_id: An integer Messenger ID of the message.
         sequence_position: An integer position of the event in the
@@ -44,7 +44,7 @@ class MessageReceived():
         '''
         # Convert any quick reply to a Quick Reply object
         if 'quick_reply' in json:
-            quick_reply = QuickReply.from_json(json['quick_reply'])
+            quick_reply = QuickReplyPayload.from_json(json['quick_reply'])
         else:
             quick_reply = None
 
@@ -125,7 +125,7 @@ class LocationAttachment:
                    json['payload']['coordinates']['long'])
 
 
-class QuickReply:
+class QuickReplyPayload:
     '''A class holding a developer-specified quick reply payload.
 
     Attributes:
@@ -138,14 +138,14 @@ class QuickReply:
 
     @classmethod
     def from_json(cls, json):
-        '''Builds a QuickReply object from JSON provided by the API.
+        '''Builds a QuickReplyPayload object from JSON provided by the API.
 
         Args:
             json: A dict containing the JSON representation that is converted
                   into the QuickAttachment object.
 
         Returns:
-            A QuickReply object.
+            A QuickReplyPayload object.
 
         '''
         return cls(json['payload'])
