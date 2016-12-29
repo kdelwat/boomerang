@@ -25,3 +25,15 @@ def test_text_message_json():
     required_json = {'text': 'dummy_text'}
 
     assert message.to_json() == required_json
+
+
+def test_media_attachment_json():
+    '''Tests the to_json() functionality of the MediaAttachment class.'''
+
+    attachment = messages.MediaAttachment('image', 'http://www.google.com')
+    attachment_json = {'type': 'image',
+                       'payload': {'url': 'http://www.google.com'}}
+    message = messages.Message(attachment=attachment)
+
+    assert attachment.to_json() == attachment_json
+    assert message.to_json() == {'attachment': attachment_json}

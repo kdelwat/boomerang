@@ -38,6 +38,9 @@ class Message():
         if self.text is not None:
             json['text'] = self.text
 
+        if self.attachment is not None:
+            json['attachment'] = self.attachment.to_json()
+
         return json
 
 
@@ -70,7 +73,18 @@ class MediaAttachment:
         return cls(json['type'], json['payload']['url'])
 
     def to_json(self):
-        return
+        '''Converts the attachment to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of a media
+            attachment.
+
+        '''
+
+        json = {'type': self.media_type,
+                'payload': {'url': self.url}}
+
+        return json
 
 
 class LocationAttachment:
