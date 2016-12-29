@@ -43,14 +43,24 @@ def test_button_template_json():
     '''Tests the to_json() functionality of the ButtonTemplate class.'''
 
     url_button = buttons.URLButton('Google', 'http://www.google.com')
-    attachment = messages.ButtonTemplate('Select a URL', [url_button])
+    postback_button = buttons.PostbackButton('Postback', 'dummy_payload')
+    call_button = buttons.CallButton('Call', '+1234567890')
+    attachment = messages.ButtonTemplate('Select a URL', [url_button,
+                                                          postback_button,
+                                                          call_button])
     message = messages.Message(attachment=attachment)
 
     payload_json = {'template_type': 'button',
                     'text': 'Select a URL',
                     'buttons': [{'type': 'web_url',
                                  'url': 'http://www.google.com',
-                                 'title': 'Google'}]}
+                                 'title': 'Google'},
+                                {'type': 'postback',
+                                 'payload': 'dummy_payload',
+                                 'title': 'Postback'},
+                                {'type': 'phone_number',
+                                 'payload': '+15105551234',
+                                 'title': 'Call'}]}
 
     message_json = {'attachment': {'type': 'template',
                                    'payload': payload_json}}
