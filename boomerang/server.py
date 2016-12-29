@@ -183,7 +183,10 @@ class Messenger:
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
             response = await self.post(session, json_string)
 
-        return response['message_id']
+        if 'message_id' in response:
+            return response['message_id']
+        else:
+            return response
 
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
