@@ -7,7 +7,7 @@ Tests for classes in the messages module.
 
 import pytest
 
-from boomerang import messages, exceptions
+from boomerang import messages, exceptions, buttons
 
 
 def test_invalid_message():
@@ -37,3 +37,22 @@ def test_media_attachment_json():
 
     assert attachment.to_json() == attachment_json
     assert message.to_json() == {'attachment': attachment_json}
+
+
+def test_button_template_json():
+    '''Tests the to_json() functionality of the ButtonTemplate class.'''
+
+    url_button = buttons.URLButton('Google', 'http://www.google.com')
+    attachment = messages.ButtonTemplate('Select a URL', [url_button])
+    message = messages.Message(attachment=attachment)
+
+    payload_json = {'template_type': 'button',
+                    'text': 'Select a URL',
+                    'buttons': [{'type': 'web_url',
+                                 'url': 'http://www.google.com',
+                                 'title': 'Google'}]}
+
+    message_json = {'attachment': {'type': 'template',
+                                   'payload': payload_json}}
+
+    assert message.to_json() == message_json
