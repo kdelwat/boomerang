@@ -139,3 +139,30 @@ class Template(metaclass=abc.ABCMeta):
         '''
         return {'type': 'template',
                 'payload': payload}
+
+
+class ButtonTemplate(Template):
+    '''A class representing a button template.
+
+    Attributes:
+        text: The text of the message.
+        buttons: A list of Button objects to include.
+
+    '''
+    def __init__(self, text, buttons):
+        self.text = text
+        self.buttons = buttons
+
+    def to_json(self):
+        '''Converts the template to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the template.
+
+        '''
+        payload = {'template_type': 'button',
+                   'text': self.text,
+                   'buttons': [button.to_json() for button in self.buttons]}
+
+        # Call the parent Template class with the payload
+        return super().to_json(payload)
