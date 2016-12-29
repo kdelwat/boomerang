@@ -1,0 +1,2 @@
+class BoomerangException(Exception):
+    pass
