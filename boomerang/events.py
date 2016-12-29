@@ -1,3 +1,6 @@
+from .messages import LocationAttachment, MediaAttachment
+
+
 class MessageReceived():
     '''A class holding Message Received events.
 
@@ -62,67 +65,6 @@ class MessageReceived():
         return cls(user_id, timestamp, text=text,
                    attachments=attachments, quick_reply=quick_reply,
                    message_id=json['mid'], sequence_position=json['seq'])
-
-
-class MediaAttachment:
-    '''A class holding media attachments.
-
-    Attributes:
-        media_type: The type of the attachment. Can be one of
-                    'image', 'audio', 'video', or 'file'.
-        url: The url of the media as a string.
-
-    '''
-
-    def __init__(self, media_type, url):
-        self.media_type = media_type
-        self.url = url
-
-    @classmethod
-    def from_json(cls, json):
-        '''Builds a MediaAttachment object from JSON provided by the API.
-
-        Args:
-            json: A dict containing the JSON representation that is converted
-                  into the MediaAttachment object.
-
-        Returns:
-            A MediaAttachment object.
-
-        '''
-        return cls(json['type'], json['payload']['url'])
-
-    def to_json(self):
-        return
-
-
-class LocationAttachment:
-    '''A class holding location attachments.
-
-    Attributes:
-        latitude: A float of the latitude of the location.
-        longitude: A float of the longitude of the location.
-
-    '''
-
-    def __init__(self, latitude, longitude):
-        self.latitude = latitude
-        self.longitude = longitude
-
-    @classmethod
-    def from_json(cls, json):
-        '''Builds a LocationAttachment object from JSON provided by the API.
-
-        Args:
-            json: A dict containing the JSON representation that is converted
-                  into the LocationAttachment object.
-
-        Returns:
-            A LocationAttachment object.
-
-        '''
-        return cls(json['payload']['coordinates']['lat'],
-                   json['payload']['coordinates']['long'])
 
 
 class QuickReplyPayload:
