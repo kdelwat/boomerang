@@ -72,6 +72,29 @@ class PostbackButton(Button):
                 'payload': self.payload}
 
 
+class ShareButton(Button):
+    '''A class representing a share button, which can only be present inside
+    a generic template.
+
+    Attributes:
+        text: The text to display on the button.
+        phone_number: A string representing a phone number
+                      (including area code).
+
+    '''
+    def __init__(self):
+        self.button_type = 'element_share'
+
+    def to_json(self):
+        '''Converts the button to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the button.
+
+        '''
+        return {'type': self.button_type}
+
+
 class CallButton(Button):
     '''A class representing a call button, which triggers a phone call.
 
