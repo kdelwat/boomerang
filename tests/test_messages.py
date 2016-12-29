@@ -44,7 +44,7 @@ def test_button_template_json():
 
     url_button = buttons.URLButton('Google', 'http://www.google.com')
     postback_button = buttons.PostbackButton('Postback', 'dummy_payload')
-    call_button = buttons.CallButton('Call', '+1234567890')
+    call_button = buttons.CallButton('Call', '+15105551234')
     attachment = messages.ButtonTemplate('Select a URL', [url_button,
                                                           postback_button,
                                                           call_button])
