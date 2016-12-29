@@ -119,3 +119,63 @@ class CallButton(Button):
         return {'type': self.button_type,
                 'title': self.text,
                 'payload': self.phone_number}
+
+
+class QuickReply:
+    '''A class representing quick-reply buttons.
+
+    Attributes:
+        button_type: The type of the button, either 'text' or 'location'.
+        text: The text to display on the button. Due to the Send API's
+              limitation, it cannot be more than 20 characters long. Only
+              available when button_type is 'text'.
+        payload: The payload string that will be returned to the webhook when
+                 the button is pressed. Only available when button_type is
+                 'text'.
+        image_url: The URL of an image to use on the button. Only available
+                   when button_type is 'text'.
+
+    '''
+    def __init__(self, button_type, text=None, payload=None, image_url=None):
+
+        # Ensure that only a valid button type is chosen.
+        if button_type not in ['text', 'location']:
+            error = "QuickReply button_type must be 'text' or 'location'"
+            raise BoomerangException(error)
+
+        self.button_type = button_type
+
+        # Initialise a text button.
+        if button_type == 'text':
+            if text is None or payload is None:
+                error = "QuickReply text button must contain text and payload"
+                raise BoomerangException(error)
+
+            self.text = text
+            self.payload = payload
+            self.image_url = image_url
+
+        # Initialise a location button, which can't take other parameters.
+        else:
+            if any(attr is not None for attr in [text, payload, image_url]):
+                error = ('QuickReply location button cannot contain other'
+                         'attributes')
+                raise BoomerangException(error)
+
+    def to_json(self):
+        '''Converts the button to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the button.
+
+        '''
+        json = {'content_type': self.button_type}
+
+        if self.button_type == 'text':
+            json['title'] = self.text
+            json['payload'] = self.payload
+
+            if self.image_url is not None:
+                json['image_url'] = self.image_url
+
+        return json

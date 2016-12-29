@@ -43,6 +43,10 @@ class Message():
         if self.attachment is not None:
             json['attachment'] = self.attachment.to_json()
 
+        if len(self.quick_replies) > 0:
+            json['quick_replies'] = [quick_reply.to_json() for quick_reply in
+                                     self.quick_replies]
+
         return json
 
 

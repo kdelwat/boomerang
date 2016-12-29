@@ -66,3 +66,45 @@ def test_button_template_json():
                                    'payload': payload_json}}
 
     assert message.to_json() == message_json
+
+
+def test_quick_reply():
+    '''Tests the initialisation of the QuickReply class.'''
+
+    # Ensure the QuickReply button_type can only be 'text' or 'location'
+    with pytest.raises(exceptions.BoomerangException):
+        _ = buttons.QuickReply('image')
+
+    # Ensure error is raised on missing text arguments
+    with pytest.raises(exceptions.BoomerangException):
+        _ = buttons.QuickReply('text', text='dummy_text')
+
+    with pytest.raises(exceptions.BoomerangException):
+        _ = buttons.QuickReply('text', payload='dummy_payload')
+
+    # Ensure no other attributes are given when creating a location
+    # QuickReply
+    with pytest.raises(exceptions.BoomerangException):
+        _ = buttons.QuickReply('location', text='dummy_text')
+
+
+def test_quick_reply_json():
+    '''Tests the to_json() functionality of the QuickReply class.'''
+
+    text_button = buttons.QuickReply('text', text='Button',
+                                     payload='button_pressed',
+                                     image_url='http://www.google.com')
+    location_button = buttons.QuickReply('location')
+
+    message = messages.Message(text='Choose a button',
+                               quick_replies=[text_button,
+                                              location_button])
+
+    message_json = {'text': 'Choose a button',
+                    'quick_replies': [{'content_type': 'text',
+                                       'title': 'Button',
+                                       'payload': 'button_pressed',
+                                       'image_url': 'http://www.google.com'},
+                                      {'content_type': 'location'}]}
+
+    assert message.to_json() == message_json
