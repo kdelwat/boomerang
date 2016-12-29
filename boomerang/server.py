@@ -1,4 +1,6 @@
 import uvloop
+import json
+import aiohttp
 
 from sanic import Sanic
 import sanic.response as response
@@ -137,10 +139,51 @@ class Messenger:
                         event = message_class.from_json(user_id,
                                                         timestamp,
                                                         message[identifier])
-                        await handler(event)
-                        break
+
+                        # Don't respond to echo events
+                        if 'is_echo' not in message[identifier]:
+                            await handler(event)
+                            break
 
         return response.text('Success', status=200)
+
+    async def post(self, session, data):
+        '''Makes a POST request to the Send API.
+
+        Args:
+            session: The aiohttp session to use.
+            data: A JSON string that will be the body of the POST request.
+
+        Returns:
+            An aiohttp response in JSON format.
+        '''
+        url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' \
+              + self._page_token
+        headers = {'content-type': 'application/json'}
+
+        async with session.post(url, data=data, headers=headers) as response:
+            return await response.json()
+
+    async def send(self, recipient_id, message):
+        '''Sends a message to the given recipient using the Send API.
+
+        Args:
+            recipient_id: The integer ID of the user to send the message to.
+            message: A Message object containing the message to send.
+
+        Returns:
+            The message ID returned by the Send API.
+
+        '''
+        # Create the JSON for the POST request.
+        json_message = {'recipient': {'id': recipient_id},
+                        'message': message.to_json()}
+        json_string = json.dumps(json_message)
+
+        async with aiohttp.ClientSession(loop=self._event_loop) as session:
+            response = await self.post(session, json_string)
+
+        return response['message_id']
 
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
