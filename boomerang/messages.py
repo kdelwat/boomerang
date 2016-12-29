@@ -1,3 +1,5 @@
+import abc
+
 from .exceptions import BoomerangException
 
 
@@ -114,3 +116,26 @@ class LocationAttachment:
         '''
         return cls(json['payload']['coordinates']['lat'],
                    json['payload']['coordinates']['long'])
+
+
+class Template(metaclass=abc.ABCMeta):
+    '''The abstract base class for all template types.'''
+
+    @abc.abstractmethod
+    def to_json(self, payload):
+        '''Implements the to_json() method for all template types.
+
+        This method provides the JSON representation common to all templates,
+        namely the 'type' and 'payload' attributes. Each subclass must call
+        this method using super, and provide its own JSON representation of the
+        payload.
+
+        Args:
+            payload: A dictionary JSON representation of the template's payload.
+
+        Returns:
+            A dictionary containing the complete JSON representation of
+            the template.
+        '''
+        return {'type': 'template',
+                'payload': payload}
