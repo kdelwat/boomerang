@@ -136,12 +136,12 @@ class Messenger:
                     identifier, message_class, handler = message_type
 
                     if identifier in message:
-                        event = message_class.from_json(user_id,
-                                                        timestamp,
-                                                        message[identifier])
-
                         # Don't respond to echo events
                         if 'is_echo' not in message[identifier]:
+                            event = message_class.from_json(user_id,
+                                                            timestamp,
+                                                            message[identifier])
+
                             await handler(event)
                             break
 
