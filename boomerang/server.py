@@ -6,6 +6,7 @@ from sanic import Sanic
 import sanic.response as response
 
 from . import events
+from .exceptions import BoomerangException
 
 
 class Messenger:
@@ -178,6 +179,36 @@ class Messenger:
         # Create the JSON for the POST request.
         json_message = {'recipient': {'id': recipient_id},
                         'message': message.to_json()}
+        json_string = json.dumps(json_message)
+
+        async with aiohttp.ClientSession(loop=self._event_loop) as session:
+            response = await self.post(session, json_string)
+
+        if 'message_id' in response:
+            return response['message_id']
+        else:
+            return response
+
+    async def send_action(self, recipient_id, action):
+        '''Sends an action to the given recipient using the Send API.
+
+        Args:
+            recipient_id: The integer ID of the user to send the message to.
+            action: One of 'typing_on', 'typing_off', or 'mark_seen'.
+
+        Returns:
+            The message ID returned by the Send API.
+
+        '''
+
+        if action not in ['typing_on', 'typing_off', 'mark_seen']:
+            error = ("Action must be one of 'typing_on', 'typing_off',"
+                     "or 'mark_seen', not {0}".format(action))
+            raise BoomerangException(error)
+
+        # Create the JSON for the POST request.
+        json_message = {'recipient': {'id': recipient_id},
+                        'sender_action': action}
         json_string = json.dumps(json_message)
 
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
