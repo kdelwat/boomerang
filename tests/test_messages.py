@@ -173,3 +173,40 @@ def test_list_template_json():
                                    'payload': payload_json}}
 
     assert message.to_json() == message_json
+
+
+def test_generic_template_json():
+    '''Tests the to_json() functionality of the GenericTemplate class.'''
+
+    url_button = buttons.URLButton('Google', 'http://www.google.com')
+    postback_button = buttons.PostbackButton('Postback', 'dummy_payload')
+    default_action = messages.DefaultAction('https://i.imgur.com/MBUyt0n.png')
+
+    element = messages.Element('Element', sub_title='Element subtitle',
+                               image_url='https://i.imgur.com/MBUyt0n.png',
+                               default_action=default_action,
+                               buttons=[url_button, postback_button])
+
+    attachment = messages.GenericTemplate([element, element])
+
+    message = messages.Message(attachment=attachment)
+
+    element_json = {'title': 'Element',
+                    'subtitle': 'Element subtitle',
+                    'image_url': 'https://i.imgur.com/MBUyt0n.png',
+                    'default_action': {'type': 'web_url',
+                                       'url': 'https://i.imgur.com/MBUyt0n.png'},
+                    'buttons': [{'type': 'web_url',
+                                 'title': 'Google',
+                                 'url': 'http://www.google.com'},
+                                {'type': 'postback',
+                                 'payload': 'dummy_payload',
+                                 'title': 'Postback'}]}
+
+    payload_json = {'template_type': 'generic',
+                    'elements': [element_json, element_json]}
+
+    message_json = {'attachment': {'type': 'template',
+                                   'payload': payload_json}}
+
+    assert message.to_json() == message_json

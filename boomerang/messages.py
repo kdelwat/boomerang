@@ -226,6 +226,37 @@ class ListTemplate(Template):
         return super().to_json(payload)
 
 
+class GenericTemplate(Template):
+    '''A class representing a generic template.
+
+    Attributes:
+        elements: A list of Elements to include in the list.
+
+    '''
+    def __init__(self, elements):
+
+        # The Send API allows up to 10 elements only.
+        if len(elements) in range(1, 11):
+            self.elements = elements
+        else:
+            error = 'Generic templates require between 1 and 10 Elements'
+            raise BoomerangException(error)
+
+    def to_json(self):
+        '''Converts the template to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the template.
+
+        '''
+        payload = {'template_type': 'generic',
+                   'elements': [element.to_json() for element in
+                                self.elements]}
+
+        # Call the parent Template class with the payload
+        return super().to_json(payload)
+
+
 class Element:
     '''A class representing an element of the ListTemplate and GenericTemplate.
 
