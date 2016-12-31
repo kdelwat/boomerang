@@ -117,7 +117,7 @@ def test_invalid_list_template():
     element = messages.Element('Element', sub_title='Element subtitle',
                                image_url='https://i.imgur.com/MBUyt0n.png',
                                default_action=default_action,
-                               button=url_button)
+                               buttons=[url_button])
 
     # Between 2 and 4 elements must be provided
     with pytest.raises(exceptions.BoomerangException):
@@ -131,7 +131,7 @@ def test_invalid_list_template():
     # contains an image
     imageless_element = messages.Element('Element',
                                          default_action=default_action,
-                                         button=url_button)
+                                         buttons=[url_button])
 
     with pytest.raises(exceptions.BoomerangException):
         list_template = messages.ListTemplate([imageless_element, element],
@@ -146,7 +146,7 @@ def test_list_template_json():
     element = messages.Element('Element', sub_title='Element subtitle',
                                image_url='https://i.imgur.com/MBUyt0n.png',
                                default_action=default_action,
-                               button=url_button)
+                               buttons=[url_button])
 
     attachment = messages.ListTemplate([element, element],
                                        button=url_button)

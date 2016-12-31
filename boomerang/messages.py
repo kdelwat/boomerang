@@ -234,16 +234,16 @@ class Element:
         sub_title: A subtitle to display on the element.
         image_url: The URL of an image to display on the element.
         default_action: A DefaultAction to trigger when the element is pressed.
-        button: A Button to add to the element.
+        buttons: A list of Buttons to add to the element.
 
     '''
     def __init__(self, title, sub_title=None, image_url=None,
-                 default_action=None, button=None):
+                 default_action=None, buttons=None):
         self.title = title
         self.sub_title = sub_title
         self.image_url = image_url
         self.default_action = default_action
-        self.button = button
+        self.buttons = buttons
 
     def to_json(self):
         '''Converts the element to JSON.
@@ -263,10 +263,8 @@ class Element:
         if self.default_action is not None:
             json['default_action'] = self.default_action.to_json()
 
-        # While the Send API says that only one button may be used, it must
-        # be within a list.
-        if self.button is not None:
-            json['buttons'] = [self.button.to_json()]
+        if self.buttons is not None:
+            json['buttons'] = [button.to_json() for button in self.buttons]
 
         return json
 
