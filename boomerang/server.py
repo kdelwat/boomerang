@@ -219,6 +219,21 @@ class Messenger:
         else:
             return response
 
+    async def acknowledge(self, message):
+        '''Use message actions to acknowledge to the user that sent the given
+        message that the message has been received and is being worked on.
+
+        This function sends both the 'mark_seen' and 'typing_on' events to the
+        user. Sending a new message to the user will automatically disable the
+        typing notification.
+
+        Args:
+            message: A Message object to acknowledge the receipt of.
+
+        '''
+        await self.send_action(message.user_id, 'mark_seen')
+        await self.send_action(message.user_id, 'typing_on')
+
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
 

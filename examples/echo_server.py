@@ -12,6 +12,9 @@ class EchoServer(Messenger):
         print('\nReceived message from {0}'.format(message.user_id))
         print('> {0}'.format(message.text))
 
+        # Inform the sender that their message is being processed.
+        await self.acknowledge(message)
+
         # Create a Message object with the text received
         reply = messages.Message(text=message.text)
 
