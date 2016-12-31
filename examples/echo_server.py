@@ -19,7 +19,7 @@ class EchoServer(Messenger):
         reply = messages.Message(text=message.text)
 
         # Send the new Message object
-        message_id = await self.send(message.user_id, reply)
+        message_id = await self.respond_to(message, reply)
 
         print('Reply sent with message id: {0}'.format(message_id))
 

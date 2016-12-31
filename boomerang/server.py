@@ -228,11 +228,26 @@ class Messenger:
         typing notification.
 
         Args:
-            message: A Message object to acknowledge the receipt of.
+            message: A MessageReceived object to acknowledge the receipt of.
 
         '''
         await self.send_action(message.user_id, 'mark_seen')
         await self.send_action(message.user_id, 'typing_on')
+
+    async def respond_to(self, message_received, response):
+        '''Send a new Message to the user who triggered the given MessageReceived
+        event.
+
+        Args:
+            message_received: A MessageReceived object to respond to.
+            response: A Message object to send to the user who triggered
+                      message_recieved.
+
+        Returns:
+            The message ID returned by the Send API.
+
+        '''
+        return await self.send(message_received.user_id, response)
 
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
