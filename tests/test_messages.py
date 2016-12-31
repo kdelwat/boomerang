@@ -108,3 +108,68 @@ def test_quick_reply_json():
                                       {'content_type': 'location'}]}
 
     assert message.to_json() == message_json
+
+
+def test_invalid_list_template():
+    '''Tests the error-checking in the ListTemplate class.'''
+    url_button = buttons.URLButton('Google', 'http://www.google.com')
+    default_action = messages.DefaultAction('https://i.imgur.com/MBUyt0n.png')
+    element = messages.Element('Element', sub_title='Element subtitle',
+                               image_url='https://i.imgur.com/MBUyt0n.png',
+                               default_action=default_action,
+                               button=url_button)
+
+    # Between 2 and 4 elements must be provided
+    with pytest.raises(exceptions.BoomerangException):
+        list_template = messages.ListTemplate([])
+
+    with pytest.raises(exceptions.BoomerangException):
+        list_template = messages.ListTemplate([element, element, element,
+                                               element, element])
+
+    # Ensure that the first element of a ListTemplate in non-compact form
+    # contains an image
+    imageless_element = messages.Element('Element',
+                                         default_action=default_action,
+                                         button=url_button)
+
+    with pytest.raises(exceptions.BoomerangException):
+        list_template = messages.ListTemplate([imageless_element, element],
+                                              compact=False)
+
+
+def test_list_template_json():
+    '''Tests the to_json() functionality of the ListTemplate class.'''
+
+    url_button = buttons.URLButton('Google', 'http://www.google.com')
+    default_action = messages.DefaultAction('https://i.imgur.com/MBUyt0n.png')
+    element = messages.Element('Element', sub_title='Element subtitle',
+                               image_url='https://i.imgur.com/MBUyt0n.png',
+                               default_action=default_action,
+                               button=url_button)
+
+    attachment = messages.ListTemplate([element, element],
+                                       button=url_button)
+
+    message = messages.Message(attachment=attachment)
+
+    element_json = {'title': 'Element',
+                    'subtitle': 'Element subtitle',
+                    'image_url': 'https://i.imgur.com/MBUyt0n.png',
+                    'default_action': {'type': 'web_url',
+                                       'url': 'https://i.imgur.com/MBUyt0n.png'},
+                    'buttons': [{'type': 'web_url',
+                                 'title': 'Google',
+                                 'url': 'http://www.google.com'}]}
+
+    payload_json = {'template_type': 'list',
+                    'elements': [element_json, element_json],
+                    'buttons': [{'type': 'web_url',
+                                 'url': 'http://www.google.com',
+                                 'title': 'Google'}],
+                    'top_element_style': 'compact'}
+
+    message_json = {'attachment': {'type': 'template',
+                                   'payload': payload_json}}
+
+    assert message.to_json() == message_json

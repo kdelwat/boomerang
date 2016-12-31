@@ -170,3 +170,124 @@ class ButtonTemplate(Template):
 
         # Call the parent Template class with the payload
         return super().to_json(payload)
+
+
+class ListTemplate(Template):
+    '''A class representing a list template.
+
+    Attributes:
+        elements: A list of Elements to include in the list.
+        button: A Button to include at the end of the list.
+        compact: A boolean. If False, the first Element is expanded to fill
+                 the top of the list. Otherwise, all items are rendered the
+                 same way. Defaults to True.
+
+    '''
+    def __init__(self, elements, button=None, compact=True):
+
+        # The Send API allows two to four elements only.
+        if len(elements) in range(2, 5):
+            self.elements = elements
+        else:
+            error = 'List templates require 2, 3, or 4 Elements'
+            raise BoomerangException(error)
+
+        self.button = button
+
+        # Ensure the template is valid when in non-compact form.
+        if not compact and elements[0].image_url is None:
+            error = ('"image_url" must be present in the first element'
+                     'of a non-compact list template')
+            raise BoomerangException(error)
+
+        self.compact = True
+
+    def to_json(self):
+        '''Converts the template to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the template.
+
+        '''
+        payload = {'template_type': 'list',
+                   'elements': [element.to_json() for element in
+                                self.elements]}
+
+        # While the Send API says that only one button may be used, it must
+        # be within a list.
+        if self.button is not None:
+            payload['buttons'] = [self.button.to_json()]
+
+        # Set the template style
+        compact_styles = {True: 'compact', False: 'large'}
+        payload['top_element_style'] = compact_styles[self.compact]
+
+        # Call the parent Template class with the payload
+        return super().to_json(payload)
+
+
+class Element:
+    '''A class representing an element of the ListTemplate and GenericTemplate.
+
+    Attributes:
+        title: The name of the element.
+        sub_title: A subtitle to display on the element.
+        image_url: The URL of an image to display on the element.
+        default_action: A DefaultAction to trigger when the element is pressed.
+        button: A Button to add to the element.
+
+    '''
+    def __init__(self, title, sub_title=None, image_url=None,
+                 default_action=None, button=None):
+        self.title = title
+        self.sub_title = sub_title
+        self.image_url = image_url
+        self.default_action = default_action
+        self.button = button
+
+    def to_json(self):
+        '''Converts the element to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the button.
+
+        '''
+        json = {'title': self.title}
+
+        if self.sub_title is not None:
+            json['subtitle'] = self.sub_title
+
+        if self.image_url is not None:
+            json['image_url'] = self.image_url
+
+        if self.default_action is not None:
+            json['default_action'] = self.default_action.to_json()
+
+        # While the Send API says that only one button may be used, it must
+        # be within a list.
+        if self.button is not None:
+            json['buttons'] = [self.button.to_json()]
+
+        return json
+
+
+class DefaultAction:
+    '''A class representing an Element's default action, i.e. launching a
+    URL.
+
+    Attributes:
+        url: The url to open when the element is pressed.
+
+    '''
+    def __init__(self, url):
+        self.url = url
+
+    def to_json(self):
+        '''Converts the action to JSON.
+
+        Returns:
+            A dictionary holding the JSON representation of the button.
+
+        '''
+        return {'type': 'web_url',
+                'url': self.url}
