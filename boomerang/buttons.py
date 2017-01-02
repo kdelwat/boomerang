@@ -76,11 +76,6 @@ class ShareButton(Button):
     '''A class representing a share button, which can only be present inside
     a generic template.
 
-    Attributes:
-        text: The text to display on the button.
-        phone_number: A string representing a phone number
-                      (including area code).
-
     '''
     def __init__(self):
         self.button_type = 'element_share'

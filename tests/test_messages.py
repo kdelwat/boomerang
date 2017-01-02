@@ -68,6 +68,24 @@ def test_button_template_json():
     assert message.to_json() == message_json
 
 
+def test_button_template_json_share():
+    '''Tests the to_json() functionality of the ButtonTemplate class,
+    when a ShareButton is present.'''
+
+    share_button = buttons.ShareButton()
+    attachment = messages.ButtonTemplate('Select a URL', [share_button])
+    message = messages.Message(attachment=attachment)
+
+    payload_json = {'template_type': 'button',
+                    'text': 'Select a URL',
+                    'buttons': [{'type': 'element_share'}]}
+
+    message_json = {'attachment': {'type': 'template',
+                                   'payload': payload_json}}
+
+    assert message.to_json() == message_json
+
+
 def test_quick_reply():
     '''Tests the initialisation of the QuickReply class.'''
 
