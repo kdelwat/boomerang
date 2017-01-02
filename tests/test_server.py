@@ -14,6 +14,7 @@ from yarl import URL
 from boomerang.server import Messenger
 from boomerang.messages import Message
 from boomerang.exceptions import BoomerangException
+from boomerang.events import MessageReceived
 
 
 @pytest.fixture
@@ -121,6 +122,33 @@ async def test_send_action(bot, monkeypatch):
 
     # Ensure the response's message ID is correctly handled
     assert await bot.send_action(123, 'typing_on') == 'dummy_message_id'
+
+
+@pytest.mark.asyncio
+async def test_acknowledge(bot, monkeypatch):
+    '''Tests the acknowledge() function, ensuring it calls send_action
+    with the appropriate arguments.'''
+    result = {}
+
+    # Create a MessageReceived event
+    json_data = {'mid': 'mid.1482375186449:88d829fb30',
+                 'seq': 426185,
+                 'text': 'ping'}
+
+    message_received_event = MessageReceived.from_json(123, 1234567890,
+                                                       json_data)
+
+    # Mock the send_action method to record all actions sent in the result
+    # dictionary
+    async def mock_send_action(recipient_id, action):
+        if recipient_id == 123:
+            result[action] = True
+
+    monkeypatch.setattr(bot, 'send_action', mock_send_action)
+
+    # Ensure that all required actions were sent
+    await bot.acknowledge(message_received_event)
+    assert result['mark_seen'] and result['typing_on']
 
 
 def test_valid_register(bot):
