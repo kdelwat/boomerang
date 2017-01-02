@@ -14,7 +14,7 @@ def test_invalid_message():
     '''Ensures that Message objects require either a text message or Attachment
     when being initialised.'''
     with pytest.raises(exceptions.BoomerangException):
-        message = messages.Message()
+        messages.Message()
 
 
 def test_text_message_json():
@@ -43,7 +43,7 @@ def test_button_text_too_long():
     '''Ensures that Buttons raise an error when their text is too long.'''
 
     with pytest.raises(exceptions.BoomerangException):
-        url_button = buttons.URLButton('This text is greater than 20',
+        buttons.URLButton('This text is greater than 20',
                                        'http://www.google.com')
 
 
@@ -99,19 +99,19 @@ def test_quick_reply():
 
     # Ensure the QuickReply button_type can only be 'text' or 'location'
     with pytest.raises(exceptions.BoomerangException):
-        _ = buttons.QuickReply('image')
+        buttons.QuickReply('image')
 
     # Ensure error is raised on missing text arguments
     with pytest.raises(exceptions.BoomerangException):
-        _ = buttons.QuickReply('text', text='dummy_text')
+        buttons.QuickReply('text', text='dummy_text')
 
     with pytest.raises(exceptions.BoomerangException):
-        _ = buttons.QuickReply('text', payload='dummy_payload')
+        buttons.QuickReply('text', payload='dummy_payload')
 
     # Ensure no other attributes are given when creating a location
     # QuickReply
     with pytest.raises(exceptions.BoomerangException):
-        _ = buttons.QuickReply('location', text='dummy_text')
+        buttons.QuickReply('location', text='dummy_text')
 
 
 def test_quick_reply_json():
@@ -160,8 +160,8 @@ def test_invalid_list_template():
                                          buttons=[url_button])
 
     with pytest.raises(exceptions.BoomerangException):
-        list_template = messages.ListTemplate([imageless_element, element],
-                                              compact=False)
+        messages.ListTemplate([imageless_element, element],
+                              compact=False)
 
 
 def test_list_template_json():
