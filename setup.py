@@ -20,7 +20,7 @@ test_requirements = [
 
 setup(
     name='boomerang',
-    version='0.1.0',
+    version='0.2.0',
     description="An asynchronous Python library for building services on the Facebook Messenger Platform",
     long_description=readme + '\n\n' + history,
     author="Cadel Watson",
