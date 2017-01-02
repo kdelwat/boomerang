@@ -42,7 +42,8 @@ class Messenger:
                 server_response = await self.handle_webhook(request)
                 return server_response
 
-    def run(self, hostname='127.0.0.1', port=8000, debug=False):
+    def run(self, hostname='127.0.0.1', port=8000, debug=False,
+            processes=1):
         '''Runs the bot using the given server settings.
 
         Args:
@@ -50,6 +51,7 @@ class Messenger:
                       server.
             port: The integer port on which to run the server.
             debug: A boolean enabling debug logging during operation.
+            processes: An integer number of processes to run the server on.
 
         Returns:
             None
@@ -58,7 +60,8 @@ class Messenger:
         self._server.run(loop=self._event_loop,
                          host=hostname,
                          port=port,
-                         debug=debug)
+                         debug=debug,
+                         workers=processes)
 
     def register(self, request):
         '''Handles registration of the Messenger Platform using the webhook system.
