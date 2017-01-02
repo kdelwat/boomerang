@@ -201,6 +201,19 @@ def test_list_template_json():
     assert message.to_json() == message_json
 
 
+def test_generic_template_element_limit():
+    '''Ensures that GenericTemplate raises an exception when the number
+    of elements is greater than 10.'''
+    default_action = messages.DefaultAction('https://i.imgur.com/MBUyt0n.png')
+
+    element = messages.Element('Element', sub_title='Element subtitle',
+                               image_url='https://i.imgur.com/MBUyt0n.png',
+                               default_action=default_action)
+
+    with pytest.raises(exceptions.BoomerangException):
+        messages.GenericTemplate([element] * 11)
+
+
 def test_generic_template_json():
     '''Tests the to_json() functionality of the GenericTemplate class.'''
 
