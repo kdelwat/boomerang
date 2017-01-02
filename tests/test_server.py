@@ -97,6 +97,42 @@ async def test_send(bot, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_send_error(bot, monkeypatch):
+    '''Tests the send() function, when the Send API returns an error.'''
+
+    message = Message(text='dummy_text')
+    response_json = {'error': 'dummy_error'}
+
+    # Monkeypatch the Messenger.post method to return the desired
+    # JSON
+    async def mock_post(session, json_string):
+        return response_json
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Ensure the response is returned verbatim
+    assert await bot.send(123, message) == response_json
+
+
+@pytest.mark.asyncio
+async def test_send_action_error(bot, monkeypatch):
+    '''Tests the send_action() function, when the Send API returns
+    an error.'''
+
+    response_json = {'error': 'dummy_error'}
+
+    # Monkeypatch the Messenger.post method to return the desired
+    # JSON
+    async def mock_post(session, json_string):
+        return response_json
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Ensure the response is returned verbatim
+    assert await bot.send_action(123, 'typing_on') == response_json
+
+
+@pytest.mark.asyncio
 async def test_send_action_invalid(bot):
     '''Tests the send_action() function when called with an invalid
     action.'''
