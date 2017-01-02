@@ -39,6 +39,14 @@ def test_media_attachment_json():
     assert message.to_json() == {'attachment': attachment_json}
 
 
+def test_button_text_too_long():
+    '''Ensures that Buttons raise an error when their text is too long.'''
+
+    with pytest.raises(exceptions.BoomerangException):
+        url_button = buttons.URLButton('This text is greater than 20',
+                                       'http://www.google.com')
+
+
 def test_button_template_json():
     '''Tests the to_json() functionality of the ButtonTemplate class.'''
 
