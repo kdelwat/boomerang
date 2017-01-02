@@ -12,6 +12,7 @@ from sanic.utils import sanic_endpoint_test
 from yarl import URL
 
 from boomerang.server import Messenger
+from boomerang.messages import Message
 
 
 @pytest.fixture
@@ -71,6 +72,26 @@ async def test_post(bot, monkeypatch, event_loop):
 
     # Check that the response matches the desired JSON
     assert response == test_json
+
+
+@pytest.mark.asyncio
+async def test_send(bot, monkeypatch):
+    '''Tests the send() function, checking that the desired
+    message ID is returned.'''
+
+    message = Message(text='dummy_text')
+    response_json = {'recipient_id': 123,
+                     'message_id': 'dummy_message_id'}
+
+    # Monkeypatch the Messenger.post method to return the desired
+    # JSON
+    async def mock_post(session, json_string):
+        return response_json
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Ensure the response's message ID is correctly handled
+    assert await bot.send(123, message) == 'dummy_message_id'
 
 
 def test_valid_register(bot):
