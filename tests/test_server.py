@@ -19,6 +19,26 @@ def bot():
     return Messenger('dummy_verify_token', 'dummy_page_token')
 
 
+def test_run(bot, monkeypatch):
+    '''Ensures that the run() method successfully executes.'''
+
+    result = {}
+
+    # To test this method, we monkeypatch the serve_multiple method of
+    # the server, which will inform us when the server has successfully
+    # started.
+    def mock_serve(server_settings, workers):
+        result['successful'] = True
+
+    monkeypatch.setattr(bot._server, 'serve_multiple', mock_serve)
+
+    # Run the server with two workers, in order to invoke serve_multiple()
+    bot.run(processes=2)
+
+    # Ensure the server started successfully
+    assert result['successful']
+
+
 def test_valid_register(bot):
     '''Tests valid registration request by the Messenger Platform.'''
     valid_request = {'hub.mode': 'subscribe',
