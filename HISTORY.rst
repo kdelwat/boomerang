@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.0 (2017-1-2)
+----------------
+
+- Implement the Send API. All non-beta templates and messages are supported
+  (except for the airline templates).
+
 0.1.0 (2016-12-25)
 ------------------
 
