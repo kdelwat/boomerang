@@ -13,6 +13,7 @@ from yarl import URL
 
 from boomerang.server import Messenger
 from boomerang.messages import Message
+from boomerang.exceptions import BoomerangException
 
 
 @pytest.fixture
@@ -92,6 +93,34 @@ async def test_send(bot, monkeypatch):
 
     # Ensure the response's message ID is correctly handled
     assert await bot.send(123, message) == 'dummy_message_id'
+
+
+@pytest.mark.asyncio
+async def test_send_action_invalid(bot):
+    '''Tests the send_action() function when called with an invalid
+    action.'''
+
+    with pytest.raises(BoomerangException):
+        await bot.send_action(123, 'invalid_action')
+
+
+@pytest.mark.asyncio
+async def test_send_action(bot, monkeypatch):
+    '''Tests the send_action() function, checking that the desired
+    message ID is returned.'''
+
+    response_json = {'recipient_id': 123,
+                     'message_id': 'dummy_message_id'}
+
+    # Monkeypatch the Messenger.post method to return the desired
+    # JSON
+    async def mock_post(session, json_string):
+        return response_json
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Ensure the response's message ID is correctly handled
+    assert await bot.send_action(123, 'typing_on') == 'dummy_message_id'
 
 
 def test_valid_register(bot):
