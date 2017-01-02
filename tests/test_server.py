@@ -151,6 +151,34 @@ async def test_acknowledge(bot, monkeypatch):
     assert result['mark_seen'] and result['typing_on']
 
 
+@pytest.mark.asyncio
+async def test_respond_to(bot, monkeypatch):
+    result = {}
+
+    # Create a MessageReceived event
+    json_data = {'mid': 'mid.1482375186449:88d829fb30',
+                 'seq': 426185,
+                 'text': 'ping'}
+
+    message_received_event = MessageReceived.from_json(123, 1234567890,
+                                                       json_data)
+
+    # Create a response Message
+    response = Message(text='dummy_text')
+
+    # Mock the send() function to record arguments it receives
+    async def mock_send(recipient_id, message):
+        result['recipient_id'] = recipient_id
+        result['message'] = message
+
+    monkeypatch.setattr(bot, 'send', mock_send)
+
+    # Ensure respond_to calls send() with the appropriate arguments
+    await bot.respond_to(message_received_event, response)
+    assert result['recipient_id'] == 123
+    assert result['message'] == response
+
+
 def test_valid_register(bot):
     '''Tests valid registration request by the Messenger Platform.'''
     valid_request = {'hub.mode': 'subscribe',
