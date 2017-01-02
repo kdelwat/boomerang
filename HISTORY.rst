@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.1 (1-2-2017)
+----------------
+
+- Update dependency versions to fix VersionConflict in Travis CI.
+
 0.2.0 (1-2-2017)
 ----------------
 
