@@ -8,6 +8,7 @@ Tests for the Messenger class.
 import pytest
 import aiohttp
 import json
+import hashlib
 from sanic.utils import sanic_endpoint_test
 from yarl import URL
 
@@ -213,6 +214,57 @@ async def test_respond_to(bot, monkeypatch):
     await bot.respond_to(message_received_event, response)
     assert result['recipient_id'] == 123
     assert result['message'] == response
+
+
+@pytest.mark.asyncio
+async def test_host_attachment(bot, monkeypatch):
+    '''Tests the host_attachment() method by ensuring static hosting
+    is correctly initialised and the correct MediaAttachment is returned.'''
+
+    # Set a counter for the number of times static() is called.
+    result = {'called': 0}
+
+    # Generate the required URL
+    relative_url = '/' + hashlib.sha256(bytes('image.png', 'utf-8')).hexdigest()
+
+    # Set the base_url of the Messenger instance, which would normally be
+    # set when run() is called.
+    bot._base_url = 'http://base.com'
+
+    # Mock the static() function to record arguments it receives
+    def mock_static(url, filename):
+        result['URL'] = url
+        result['filename'] = filename
+
+        # Increment the number of times static() is called
+        # (it should only be once)
+        result['called'] += 1
+
+    monkeypatch.setattr(bot._server, 'static', mock_static)
+
+    # Host a new attachment
+    attachment = await bot.host_attachment('image', 'image.png')
+
+    assert attachment.url == 'http://base.com' + relative_url
+    assert result['URL'] == relative_url
+    assert result['filename'] == 'image.png'
+
+    # Re-host the same attachment, checking that it is not re-served.
+    attachment = await bot.host_attachment('image', 'image.png')
+
+    assert attachment.url == 'http://base.com' + relative_url
+    assert result['URL'] == relative_url
+    assert result['filename'] == 'image.png'
+    assert result['called'] == 1
+
+
+@pytest.mark.asyncio
+async def test_host_attachment_no_base_url(bot):
+    '''Tests that the host_attachment() method raises an error when
+    base_url hasn't been set.'''
+    bot._base_url = None
+    with pytest.raises(BoomerangException):
+        await bot.host_attachment('image', 'image.png')
 
 
 def test_valid_register(bot):

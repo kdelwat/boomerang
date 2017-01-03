@@ -1,11 +1,12 @@
 import uvloop
 import json
 import aiohttp
+import hashlib
 
 from sanic import Sanic
 import sanic.response as response
 
-from . import events
+from . import events, messages
 from .exceptions import BoomerangException
 
 
@@ -28,6 +29,10 @@ class Messenger:
         self._event_loop = uvloop.new_event_loop()
         self._server = Sanic(__name__)
 
+        # A dictionary which holds currently-hosted attachments, where
+        # the filename is the key and the relative url is the value.
+        self._attachments = {}
+
         # Create a handler for the webhook which delegates to different
         # functions depending on the HTTP method used. GET requests are used
         # by Messenger to validate the bot, while POST requests are used to
@@ -42,13 +47,16 @@ class Messenger:
                 server_response = await self.handle_webhook(request)
                 return server_response
 
-    def run(self, hostname='127.0.0.1', port=8000, debug=False,
+    def run(self, hostname='127.0.0.1', base_url=None, port=8000, debug=False,
             processes=1):
         '''Runs the bot using the given server settings.
 
         Args:
             hostname: A string representing the hostname on which to run the
                       server.
+            base_url: The public url of the bot server, used for tasks such
+                      as attachment hosting. If None, these features will not
+                      be available.
             port: The integer port on which to run the server.
             debug: A boolean enabling debug logging during operation.
             processes: An integer number of processes to run the server on.
@@ -57,6 +65,7 @@ class Messenger:
             None
 
         '''
+        self._base_url = base_url
         self._server.run(loop=self._event_loop,
                          host=hostname,
                          port=port,
@@ -251,6 +260,43 @@ class Messenger:
 
         '''
         return await self.send(message_received.user_id, response)
+
+    async def host_attachment(self, media_type, filename):
+        '''Hosts the given file on the bot server, returning a MediaAttachment
+        object which can be sent to the Messenger API, which will access the
+        attachment from the current server.
+
+        Args:
+            media_type: The type of the attachment. Can be one of 'image',
+                        'audio', 'video' or 'file'.
+            filename: The filename of the attachment.
+
+        Returns:
+            A MediaAttachment object representing the hosted attachment.
+        '''
+
+        # If the base_url isn't set or is None, attachments cannot be hosted
+        if self._base_url is None:
+            error = 'base_url must be set for attachment hosting'
+            raise BoomerangException(error)
+
+        if filename not in self._attachments:
+            # The SHA-256 hash of the filename is used as an identifier,
+            # which is served as the URL of the attachment. This has two
+            # benefits: firstly, it guarantees a unique identifier for
+            # different attachments; and secondly, it obfuscates the file
+            # structure of the hosting machine for better security.
+            identifier = hashlib.sha256(bytes(filename,
+                                              'utf-8')).hexdigest()
+            self._attachments[filename] = '/' + identifier
+
+            # Serve the attachment using the internal server
+            self._server.static(self._attachments[filename], filename)
+
+        # Create and return the MediaAttachment object
+        relative_url = self._attachments[filename]
+        full_url = self._base_url + relative_url
+        return messages.MediaAttachment(media_type, full_url)
 
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
