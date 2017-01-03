@@ -14,7 +14,7 @@ from yarl import URL
 
 from boomerang.server import Messenger
 from boomerang.messages import Message
-from boomerang.exceptions import BoomerangException
+from boomerang.exceptions import BoomerangException, MessengerAPIException
 from boomerang.events import MessageReceived
 
 
@@ -42,6 +42,20 @@ def test_run(bot, monkeypatch):
 
     # Ensure the server started successfully
     assert result['successful']
+
+
+def test_handle_api_error(bot):
+    '''Tests the handle_api_error() method.'''
+    response_json = {'error': {'message': 'Too many send requests to phone numbers',
+                               'type': 'OAuthException',
+                               'code': 4,
+                               'error_subcode': 2018022,
+                               'fbtrace_id': 'BLBaaaaaaa'}}
+    exception_value = '4 (2018022): Too many send requests to phone numbers'
+
+    with pytest.raises(MessengerAPIException) as exception:
+        bot.handle_api_error(response_json)
+        assert exception.value == exception_value
 
 
 @pytest.mark.asyncio
@@ -102,7 +116,11 @@ async def test_send_error(bot, monkeypatch):
     '''Tests the send() function, when the Send API returns an error.'''
 
     message = Message(text='dummy_text')
-    response_json = {'error': 'dummy_error'}
+    response_json = {'error': {'message': 'Too many send requests to phone numbers',
+                               'type': 'OAuthException',
+                               'code': 4,
+                               'error_subcode': 2018022,
+                               'fbtrace_id': 'BLBaaaaaaa'}}
 
     # Monkeypatch the Messenger.post method to return the desired
     # JSON
@@ -112,7 +130,8 @@ async def test_send_error(bot, monkeypatch):
     monkeypatch.setattr(bot, 'post', mock_post)
 
     # Ensure the response is returned verbatim
-    assert await bot.send(123, message) == response_json
+    with pytest.raises(MessengerAPIException):
+        await bot.send(123, message) == response_json
 
 
 @pytest.mark.asyncio
@@ -120,7 +139,11 @@ async def test_send_action_error(bot, monkeypatch):
     '''Tests the send_action() function, when the Send API returns
     an error.'''
 
-    response_json = {'error': 'dummy_error'}
+    response_json = {'error': {'message': 'Too many send requests to phone numbers',
+                               'type': 'OAuthException',
+                               'code': 4,
+                               'error_subcode': 2018022,
+                               'fbtrace_id': 'BLBaaaaaaa'}}
 
     # Monkeypatch the Messenger.post method to return the desired
     # JSON
@@ -129,8 +152,8 @@ async def test_send_action_error(bot, monkeypatch):
 
     monkeypatch.setattr(bot, 'post', mock_post)
 
-    # Ensure the response is returned verbatim
-    assert await bot.send_action(123, 'typing_on') == response_json
+    with pytest.raises(MessengerAPIException):
+        await bot.send_action(123, 'typing_on')
 
 
 @pytest.mark.asyncio

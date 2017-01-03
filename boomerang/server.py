@@ -7,7 +7,7 @@ from sanic import Sanic
 import sanic.response as response
 
 from . import events, messages
-from .exceptions import BoomerangException
+from .exceptions import BoomerangException, MessengerAPIException
 
 
 class Messenger:
@@ -160,6 +160,28 @@ class Messenger:
 
         return response.text('Success', status=200)
 
+    def handle_api_error(self, error_json):
+        '''Wraps the error JSON returned by Facebook in a
+        MessengerAPIException and raises it.
+
+        Args:
+            error_json: A dictionary containing the JSON representation
+                        of an error returned by the API.
+
+        Returns:
+            None
+
+        Raises:
+            MessengerAPIException: Wraps the API error.
+
+        '''
+        error_payload = error_json['error']
+        error_message = '{0} ({1}): {2}'.format(error_payload['code'],
+                                                error_payload['error_subcode'],
+                                                error_payload['message'])
+
+        raise MessengerAPIException(error_message)
+
     async def post(self, session, data):
         '''Makes a POST request to the Send API.
 
@@ -199,7 +221,7 @@ class Messenger:
         if 'message_id' in response:
             return response['message_id']
         else:
-            return response
+            self.handle_api_error(response)
 
     async def send_action(self, recipient_id, action):
         '''Sends an action to the given recipient using the Send API.
@@ -229,7 +251,7 @@ class Messenger:
         if 'message_id' in response:
             return response['message_id']
         else:
-            return response
+            self.handle_api_error(response)
 
     async def acknowledge(self, message):
         '''Use message actions to acknowledge to the user that sent the given
