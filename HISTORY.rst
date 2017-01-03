@@ -2,6 +2,12 @@
 History
 =======
 
+0.3.0 (4-2-2017)
+----------------
+
+- Add automatic attachment hosting using the internal server
+- Add proper handling of Messenger API errors
+
 0.2.1 (1-2-2017)
 ----------------
 
