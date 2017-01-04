@@ -182,17 +182,23 @@ class Messenger:
 
         raise MessengerAPIException(error_message)
 
-    async def post(self, session, data):
+    async def post(self, session, data, api_endpoint='messages'):
         '''Makes a POST request to the Send API.
 
         Args:
             session: The aiohttp session to use.
             data: A JSON string that will be the body of the POST request.
+            api_endpoint: The endpoint in the Facebook Graph API to post
+                          to. The default is 'messages' for the Send API,
+                          but it may be changed to allow for thread settings
+                          etc.
 
         Returns:
             An aiohttp response in JSON format.
         '''
-        url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' \
+        url = 'https://graph.facebook.com/v2.6/me/' \
+              + api_endpoint \
+              + '?access_token=' \
               + self._page_token
         headers = {'content-type': 'application/json'}
 
