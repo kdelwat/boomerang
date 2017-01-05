@@ -93,6 +93,38 @@ async def test_post(bot, monkeypatch, event_loop):
 
 
 @pytest.mark.asyncio
+async def test_get(bot, monkeypatch, event_loop):
+    '''Tests the get() method.'''
+    test_json = {'var1': 1, 'var2': 2}
+    test_url = URL('http://www.google.com')
+
+    # Create a ClientResponse object that will be returned as a result of the
+    # mocked request.
+    mock_response = aiohttp.client_reqrep.ClientResponse('get',
+                                                         test_url)
+
+    # Encode the test JSON and store it in the ClientResponse
+    mock_response._content = bytes(json.dumps(test_json), encoding='ASCII')
+
+    # Add empty headers to the ClientResponse
+    mock_response.headers = aiohttp.CIMultiDictProxy(aiohttp.CIMultiDict([]))
+
+    # A function which mocks aiohttp's ClientSession._request to return
+    # the mock response.
+    async def mock_request(method, url, *args, **kwargs):
+        return mock_response
+
+    monkeypatch.setattr(aiohttp.client.ClientSession, '_request', mock_request)
+
+    # Make the get request
+    async with aiohttp.ClientSession(loop=event_loop) as session:
+        response = await bot.get(session, 'http://www.google.com')
+
+    # Check that the response matches the desired JSON
+    assert response == test_json
+
+
+@pytest.mark.asyncio
 async def test_send(bot, monkeypatch):
     '''Tests the send() function, checking that the desired
     message ID is returned.'''

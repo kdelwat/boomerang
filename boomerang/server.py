@@ -208,6 +208,19 @@ class Messenger:
         async with session.post(url, data=json_data, headers=headers) as response:
             return await response.json()
 
+    async def get(self, session, url):
+        '''Makes a GET request to the given URL.
+
+        Args:
+            session: The aiohttp session to use.
+            url: The URL to request from.
+
+        Returns:
+            An aiohttp response in JSON format.
+        '''
+        async with session.get(url) as response:
+            return await response.json()
+
     async def send(self, recipient_id, message):
         '''Sends a message to the given recipient using the Send API.
 
