@@ -378,6 +378,26 @@ async def test_set_thread_settings(bot, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_set_thread_settings_error(bot, monkeypatch):
+    '''Tests the set_thread_settings method when one of the API
+    calls returns an error.'''
+
+    # Mock the post() function to return an error
+    async def mock_post(session, request, api_endpoint='messages'):
+        return {'error': {'message': 'Too many send requests to phone numbers',
+                          'type': 'OAuthException',
+                          'code': 4,
+                          'error_subcode': 2018022,
+                          'fbtrace_id': 'BLBaaaaaaa'}}
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Ensure that an exception is raised when an error is returned by the API
+    with pytest.raises(MessengerAPIException):
+        await bot.set_thread_settings(account_link_url='https://google.com')
+
+
+@pytest.mark.asyncio
 async def test_get_user_information(bot, monkeypatch):
     '''Tests the get_user_information() method.'''
     result = {}
