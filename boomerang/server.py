@@ -187,7 +187,7 @@ class Messenger:
 
         Args:
             session: The aiohttp session to use.
-            data: A JSON string that will be the body of the POST request.
+            data: A JSON dictionary that will be the body of the POST request.
             api_endpoint: The endpoint in the Facebook Graph API to post
                           to. The default is 'messages' for the Send API,
                           but it may be changed to allow for thread settings
@@ -202,7 +202,10 @@ class Messenger:
               + self._page_token
         headers = {'content-type': 'application/json'}
 
-        async with session.post(url, data=data, headers=headers) as response:
+        # Create a JSON string
+        json_data = json.dumps(data)
+
+        async with session.post(url, data=json_data, headers=headers) as response:
             return await response.json()
 
     async def send(self, recipient_id, message):
@@ -219,10 +222,9 @@ class Messenger:
         # Create the JSON for the POST request.
         json_message = {'recipient': {'id': recipient_id},
                         'message': message.to_json()}
-        json_string = json.dumps(json_message)
 
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
-            response = await self.post(session, json_string)
+            response = await self.post(session, json_message)
 
         if 'message_id' in response:
             return response['message_id']
@@ -249,10 +251,9 @@ class Messenger:
         # Create the JSON for the POST request.
         json_message = {'recipient': {'id': recipient_id},
                         'sender_action': action}
-        json_string = json.dumps(json_message)
 
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
-            response = await self.post(session, json_string)
+            response = await self.post(session, json_message)
 
         if 'message_id' in response:
             return response['message_id']
