@@ -8,6 +8,7 @@ Documentation
    :maxdepth: 2
 
    installation
+   development
    usage
    contributing
    authors
