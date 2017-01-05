@@ -377,6 +377,57 @@ async def test_set_thread_settings(bot, monkeypatch):
     assert all(result['success'])
 
 
+@pytest.mark.asyncio
+async def test_get_user_information(bot, monkeypatch):
+    '''Tests the get_user_information() method.'''
+    result = {}
+
+    access_token = bot._page_token
+    required_url = 'https://graph.facebook.com/v2.6/12345?access_token=' \
+                   + access_token
+
+    mock_response = {'profile_pic': 'https://www.google.com',
+                     'gender': 'male',
+                     'locale': 'en_GB',
+                     'first_name': 'Busta',
+                     'last_name': 'Rhymes',
+                     'timezone': 0}
+
+    # Mock the get() function to validate arguments it receives
+    async def mock_get(session, url):
+        # Check that the URL given is valid
+        if url == required_url:
+            result['success'] = True
+        else:
+            result['success'] = False
+
+        # Return a dummy response
+        return mock_response
+
+    monkeypatch.setattr(bot, 'get', mock_get)
+
+    # Ensure the correct response is returned
+    assert await bot.get_user_information(12345) == mock_response
+
+    # Ensure the correct URL was created
+    assert result['success']
+
+
+@pytest.mark.asyncio
+async def test_get_user_information_permission_denied(bot, monkeypatch):
+    '''Tests the get_user_information() method when permission to the user is
+    denied.'''
+
+    # Mock the get() function to return an empty response
+    async def mock_get(session, url):
+        return {}
+
+    monkeypatch.setattr(bot, 'get', mock_get)
+
+    with pytest.raises(MessengerAPIException):
+        await bot.get_user_information(12345)
+
+
 def test_valid_register(bot):
     '''Tests valid registration request by the Messenger Platform.'''
     valid_request = {'hub.mode': 'subscribe',

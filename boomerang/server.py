@@ -402,6 +402,34 @@ class Messenger:
                 if 'result' not in response:
                     self.handle_api_error(response)
 
+    async def get_user_information(self, user_id):
+        '''Queries the Facebook API for information on the given user.
+
+        Args:
+            user_id: The integer User ID.
+
+        Returns:
+            A dictionary with the following fields: first_name, last_name,
+            profile_pic, locale, timezone, gender, and is_payment_enabled.
+
+        '''
+        url = 'https://graph.facebook.com/v2.6/' \
+              + str(user_id) \
+              + '?access_token=' \
+              + self._page_token
+
+        # Make the GET request to the Facebook API
+        async with aiohttp.ClientSession(loop=self._event_loop) as session:
+                response = await self.get(session, url)
+
+        # If the API returns an empty dictionary, raise an error
+        if len(response) == 0:
+            error = "The app doesn't have permission to query user with ID: " \
+                    + str(user_id)
+            raise MessengerAPIException(error)
+        else:
+            return response
+
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
 
