@@ -16,6 +16,7 @@ from boomerang.server import Messenger
 from boomerang.messages import Message
 from boomerang.exceptions import BoomerangException, MessengerAPIException
 from boomerang.events import MessageReceived
+from boomerang.buttons import URLButton, PostbackButton
 
 
 @pytest.fixture
@@ -288,6 +289,60 @@ async def test_host_attachment_no_base_url(bot):
     bot._base_url = None
     with pytest.raises(BoomerangException):
         await bot.host_attachment('image', 'image.png')
+
+@pytest.mark.asyncio
+async def test_set_thread_settings(bot, monkeypatch):
+    '''Tests the set_thread_settings method by ensuring it calls post()
+    with the correct parameters.'''
+
+    # The result dictionary holds a list of booleans
+    result = {'success': []}
+
+    # Mock the post() function to validate arguments it receives
+    async def mock_post(session, request, api_endpoint='messages'):
+
+        # This really ugly list contains the correct request JSON
+        valid = [{'account_linking_url': 'https://cadelwatson.com',
+                  'setting_type': 'account_linking'},
+                 {'domain_action_type': 'add',
+                  'setting_type': 'domain_whitelisting',
+                  'whitelisted_domains': ['https://google.com']},
+                 {'call_to_actions': [{'payload': 'payload'}],
+                  'setting_type': 'call_to_actions',
+                  'thread_state': 'new_thread'},
+                 {'greeting': {'text': 'hi there'}, 'setting_type': 'greeting'},
+                 {'call_to_actions': [{'title': 'Google',
+                                       'type': 'web_url',
+                                       'url': 'http://www.google.com'},
+                                      {'payload': 'mmmmmm',
+                                       'title': 'Hit me',
+                                       'type': 'postback'}],
+                  'setting_type': 'call_to_actions',
+                  'thread_state': 'existing_thread'}]
+
+        # Check that the request given to post() is valid
+        if request in valid and api_endpoint == 'thread_settings':
+            result['success'].append(True)
+        else:
+            result['success'].append(False)
+
+        # Return a dummy response
+        return {'result': 'success'}
+
+    monkeypatch.setattr(bot, 'post', mock_post)
+
+    # Create a thread settings request
+    button_list = [URLButton('Google', 'http://www.google.com'),
+                   PostbackButton('Hit me', 'mmmmmm')]
+
+    await bot.set_thread_settings(menu_buttons=button_list,
+                                  account_link_url='https://cadelwatson.com',
+                                  whitelisted_domains=['https://google.com'],
+                                  get_started_payload='payload',
+                                  greeting_text='hi there')
+
+    # Ensure that all post() requests were valid
+    assert all(result['success'])
 
 
 def test_valid_register(bot):

@@ -327,6 +327,68 @@ class Messenger:
         full_url = self._base_url + relative_url
         return messages.MediaAttachment(media_type, full_url)
 
+    async def set_thread_settings(self, account_link_url=None,
+                                  whitelisted_domains=None,
+                                  get_started_payload=None,
+                                  greeting_text=None,
+                                  menu_buttons=None):
+        '''Calls the Messenger API to set the thread settings with the given
+        parameters:
+
+        Args:
+            account_link_url: The URL to use for the account linking process.
+            whitelisted_domains: A list of Domain URLs to whitelist for
+                                extensions.
+            get_started_payload: A string payload which will be sent to the
+                                 webhook when the 'Get Started' button is
+                                 pressed.
+            greeting_text: A string which will be displayed to new users.
+            menu_buttons: A list of buttons (either URLButton or
+                          PostbackButton) to add to a persistent
+                          menu on the application
+
+        Returns:
+            None
+
+        '''
+        # A queue of JSON requests which will be sent one-by-one to the API.
+        request_queue = []
+
+        if account_link_url is not None:
+            request_queue.append({'setting_type': 'account_linking',
+                                  'account_linking_url': account_link_url})
+
+        if whitelisted_domains is not None:
+            request_queue.append({'setting_type': 'domain_whitelisting',
+                                  'domain_action_type': 'add',
+                                  'whitelisted_domains': whitelisted_domains})
+
+        if get_started_payload is not None:
+            request_queue.append({'setting_type': 'call_to_actions',
+                                  'thread_state': 'new_thread',
+                                  'call_to_actions': [{'payload':
+                                                       get_started_payload}]})
+
+        if greeting_text is not None:
+            request_queue.append({'setting_type': 'greeting',
+                                  'greeting': {'text': greeting_text}})
+
+        if menu_buttons is not None:
+            request_queue.append({'setting_type': 'call_to_actions',
+                                  'thread_state': 'existing_thread',
+                                  'call_to_actions': [button.to_json() for
+                                                      button in menu_buttons]})
+
+        # Make each request in the queue
+        async with aiohttp.ClientSession(loop=self._event_loop) as session:
+            for request in request_queue:
+                response = await self.post(session, request,
+                                           api_endpoint='thread_settings')
+
+                # Handle errors returned by the API
+                if 'result' not in response:
+                    self.handle_api_error(response)
+
     async def message_received(self, message):
         '''Handles all 'message received' events sent to the bot.
 
