@@ -13,11 +13,4 @@ Documentation
    contributing
    authors
    history
-
-=============
-API Reference
-=============
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   API reference <boomerang>
