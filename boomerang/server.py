@@ -290,6 +290,7 @@ class Messenger:
         * ``str``: A Message containing the string.
         * ``Message``: A Message object.
         * ``Template``: All types of Template object.
+        * ``MediaAttachment``: A MediaAttachment object.
 
         Args:
             recipient_id: The integer ID of the user to send the message to.
@@ -308,6 +309,9 @@ class Messenger:
             message = item
         # Handle Template objects
         elif isinstance(item, messages.Template):
+            message = messages.Message(attachment=item)
+        # Handle MediaAttachment objects
+        elif isinstance(item, messages.MediaAttachment):
             message = messages.Message(attachment=item)
 
         # Send the created Message object and return the resulting message ID.

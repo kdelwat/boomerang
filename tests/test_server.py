@@ -13,7 +13,7 @@ from sanic.utils import sanic_endpoint_test
 from yarl import URL
 
 from boomerang.server import Messenger
-from boomerang.messages import Message, ButtonTemplate
+from boomerang.messages import Message, ButtonTemplate, MediaAttachment
 from boomerang.exceptions import BoomerangException, MessengerAPIException
 from boomerang.events import MessageReceived, MESSAGE_RECEIVED
 from boomerang.buttons import URLButton, PostbackButton
@@ -196,6 +196,27 @@ async def test_send_template(bot, monkeypatch):
     monkeypatch.setattr(bot, 'send_message', mock_send_message)
 
     await bot.send(test_recipient, test_template)
+
+    assert result['valid']
+
+
+@pytest.mark.asyncio
+async def test_send_attachment(bot, monkeypatch):
+    '''Tests the send() method when called with a MediaAttachment object.'''
+
+    result = {}
+
+    test_attachment = MediaAttachment('image', 'https://www.google.com')
+    test_recipient = 123
+
+    # Mock send_message() to ensure the request is correct
+    async def mock_send_message(recipient_id, message):
+        result['valid'] = (message.attachment == test_attachment
+                           and recipient_id == test_recipient)
+
+    monkeypatch.setattr(bot, 'send_message', mock_send_message)
+
+    await bot.send(test_recipient, test_attachment)
 
     assert result['valid']
 
