@@ -496,9 +496,15 @@ async def test_handle_event(bot, monkeypatch):
     mock_handlers = {MESSAGE_RECEIVED: [mock_handle_received]}
     monkeypatch.setattr(bot, '_handlers', mock_handlers)
 
-    # Handle a message
-    message = Message(text='dummy_text')
-    await bot.handle_event(MESSAGE_RECEIVED, message)
+    # Handle a MessageReceived event
+    json_data = {'mid': 'mid.1482375186449:88d829fb30',
+                 'seq': 426185,
+                 'text': 'ping'}
+
+    message_received_event = MessageReceived.from_json(123, 1234567890,
+                                                       json_data)
+
+    await bot.handle_event(MESSAGE_RECEIVED, message_received_event)
 
     # Ensure the handler function was called.
     assert result['called']
