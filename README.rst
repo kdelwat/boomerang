@@ -51,35 +51,28 @@ Example
 The following example is a simple echo server. When a user sends a message to
 the bot, the bot echoes the message back::
 
-  from boomerang import Messenger, messages
+  from boomerang import Messenger, messages, events
 
   # Set the app's API access tokens, provided by Facebook
   VERIFY_TOKEN = 'your_webhook_token_here'
   PAGE_TOKEN = 'your_page_access_token_here'
 
+  # Initialise the server
+  app = Messenger(VERIFY_TOKEN, PAGE_TOKEN)
 
-  class EchoServer(Messenger):
+  @app.handle(events.MESSAGE_RECEIVED)
+  async def message_received(self, message):
 
-      # Override the message_received method to handle received messages
-      async def message_received(self, message):
+      # Print the received message
+      print('Received message from {0}'.format(message.user_id))
+      print('> {0}'.format(message.text))
 
-          # Print the received message
-          print('Received message from {0}'.format(message.user_id))
-          print('> {0}'.format(message.text))
+      # Inform the sender that their message is being processed
+      await self.acknowledge(message)
 
-          # Inform the sender that their message is being processed
-          await self.acknowledge(message)
+      # Return the message's text to respond
+      return message.text
 
-          # Create a Message object with the text received
-          reply = messages.Message(text=message.text)
-
-          # Send the new Message object
-          message_id = await self.respond_to(message, reply)
-
-          print('Reply sent with message id: {0}'.format(message_id))
-
-
-  app = EchoServer(VERIFY_TOKEN, PAGE_TOKEN)
   app.run(hostname='0.0.0.0', debug=True)
 
 Features
