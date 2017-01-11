@@ -15,7 +15,7 @@ from yarl import URL
 from boomerang.server import Messenger
 from boomerang.messages import Message
 from boomerang.exceptions import BoomerangException, MessengerAPIException
-from boomerang.events import MessageReceived
+from boomerang.events import MessageReceived, MESSAGE_RECEIVED
 from boomerang.buttons import URLButton, PostbackButton
 
 
@@ -478,6 +478,30 @@ def test_invalid_register(bot):
 
     # Check that the server replied that access was forbidden
     assert response.status == 403
+
+
+@pytest.mark.asyncio
+async def test_handle_event(bot, monkeypatch):
+    '''Tests that the handle_event method calls the appropriate handler
+    functions.'''
+
+    result = {}
+
+    # A mock handler function which records when it is called
+    async def mock_handle_received(message):
+        result['called'] = True
+
+    # Monkeypatch the bot's handlers to call the mock handler for message
+    # received event
+    mock_handlers = {MESSAGE_RECEIVED: [mock_handle_received]}
+    monkeypatch.setattr(bot, '_handlers', mock_handlers)
+
+    # Handle a message
+    message = Message(text='dummy_text')
+    await bot.handle_event(MESSAGE_RECEIVED, message)
+
+    # Ensure the handler function was called.
+    assert result['called']
 
 
 def message_handled_ok(server, message_type, message_content):
