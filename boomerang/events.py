@@ -1,4 +1,14 @@
+
 from .messages import LocationAttachment, MediaAttachment
+
+# Constants for event types
+MESSAGE_RECEIVED = 0
+MESSAGE_DELIVERED = 1
+MESSAGE_READ = 2
+POSTBACK = 3
+REFERRAL = 4
+OPTIN = 5
+ACCOUNT_LINKING = 6
 
 
 class MessageReceived():
