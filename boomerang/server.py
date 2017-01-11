@@ -289,6 +289,7 @@ class Messenger:
 
         * ``str``: A Message containing the string.
         * ``Message``: A Message object.
+        * ``Template``: All types of Template object.
 
         Args:
             recipient_id: The integer ID of the user to send the message to.
@@ -305,6 +306,9 @@ class Messenger:
         # Handle Message objects
         elif isinstance(item, messages.Message):
             message = item
+        # Handle Template objects
+        elif isinstance(item, messages.Template):
+            message = messages.Message(attachment=item)
 
         # Send the created Message object and return the resulting message ID.
         return await self.send_message(recipient_id, message)
