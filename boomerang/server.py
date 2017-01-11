@@ -268,8 +268,8 @@ class Messenger:
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
             response = await self.post(session, json_message)
 
-        if 'message_id' in response:
-            return response['message_id']
+        if 'recipient_id' in response:
+            return response['recipient_id']
         else:
             self.handle_api_error(response)
 
