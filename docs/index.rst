@@ -1,20 +1,16 @@
-Welcome to Boomerang's documentation!
-======================================
+.. include:: ../README.rst
 
-Contents:
+=============
+Documentation
+=============
 
 .. toctree::
    :maxdepth: 2
 
-   readme
    installation
+   development
    usage
    contributing
-   authorshistory
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   authors
+   history
+   API reference <boomerang>
