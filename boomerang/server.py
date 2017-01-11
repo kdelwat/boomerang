@@ -2,8 +2,11 @@ import uvloop
 import json
 import aiohttp
 import hashlib
+import functools
+import collections
 
 from sanic import Sanic
+from sanic.log import log
 import sanic.response as response
 
 from . import events, messages
@@ -32,6 +35,10 @@ class Messenger:
         # A dictionary which holds currently-hosted attachments, where
         # the filename is the key and the relative url is the value.
         self._attachments = {}
+
+        # A dictionary which contains the current handler functions for each
+        # message event.
+        self._handlers = {}
 
         # Create a handler for the webhook which delegates to different
         # functions depending on the HTTP method used. GET requests are used
@@ -125,28 +132,28 @@ class Messenger:
                 timestamp = message['timestamp']
 
                 # Each message type has an identifier, which Facebook uses to
-                # signify the type; a class, for holding the message; and a
-                # handler function which is implemented by the user.
+                # signify the type; a class, for holding the message; and an
+                # event type constant.
                 message_types = [('message', events.MessageReceived,
-                                  self.message_received),
+                                  events.MESSAGE_RECEIVED),
                                  ('delivery', events.MessageDelivered,
-                                  self.message_delivered),
+                                  events.MESSAGE_DELIVERED),
                                  ('read', events.MessageRead,
-                                  self.message_read),
+                                  events.MESSAGE_READ),
                                  ('postback', events.Postback,
-                                  self.postback),
+                                  events.POSTBACK),
                                  ('referral', events.Referral,
-                                  self.referral),
+                                  events.REFERRAL),
                                  ('optin', events.OptIn,
-                                  self.opt_in),
+                                  events.OPTIN),
                                  ('account_linking', events.AccountLink,
-                                  self.account_link)]
+                                  events.ACCOUNT_LINKING)]
 
                 # Loop through the message types. If one is found, create the
                 # relevant message object and handle it. Then break from the
                 # loop as there can only be one type present at a time.
                 for message_type in message_types:
-                    identifier, message_class, handler = message_type
+                    identifier, message_class, event_type = message_type
 
                     if identifier in message:
                         # Don't respond to echo events
@@ -155,10 +162,63 @@ class Messenger:
                                                             timestamp,
                                                             message[identifier])
 
-                            await handler(event)
+                            await self.handle_event(event_type, event)
                             break
 
         return response.text('Success', status=200)
+
+    async def handle_event(self, event_type, event):
+        '''Calls each handler of the given event_type with the event object,
+        collecting their responses. Then sends all relevant responses.
+
+        Args:
+            event_type: The event type constant, like events.POSTBACK.
+            event: The object containing the event.
+
+        Returns:
+            None
+
+        '''
+        log.info('Handling event with type: {0}'.format(event_type))
+
+        # If the event type has no handlers, exit early
+        if event_type not in self._handlers:
+            log.warn('No handlers available for the given event')
+            return
+
+        # Collect non-None responses from each handler function
+        responses = []
+        for handler_function in self._handlers[event_type]:
+            responses.append(await handler_function(event))
+
+        responses = [x for x in responses if x is not None]
+
+        # Send responses
+        recipient_id = event.user_id
+
+        for item in [x for x in responses if self.is_sequence(x)]:
+            # Responses that are sequences are looped through, and each
+            # individual item is sent.
+            for individual_response in item:
+                log.info('Sending {0}...'.format(item))
+                await self.send(recipient_id, individual_response)
+
+        for item in [x for x in responses if not self.is_sequence(x)]:
+            log.info('Sending {0}...'.format(item))
+            await self.send(recipient_id, item)
+
+        log.info('Successfully handled event')
+
+    @staticmethod
+    def is_sequence(x):
+        '''Returns True if the item is a sequence but isn't a string,
+        otherwise returns False.
+
+        '''
+        if isinstance(x, str):
+            return False
+        else:
+            return isinstance(x, collections.Sequence)
 
     def handle_api_error(self, error_json):
         '''Wraps the error JSON returned by Facebook in a
@@ -221,7 +281,43 @@ class Messenger:
         async with session.get(url) as response:
             return await response.json()
 
-    async def send(self, recipient_id, message):
+    async def send(self, recipient_id, item):
+        '''Infers the desired object to send based on the type of the given
+        parameter, then sends such an object to the given recipient.
+
+        Supported types and corresponding objects sent:
+
+        * ``str``: A Message containing the string.
+        * ``Message``: A Message object.
+        * ``Template``: All types of Template object.
+        * ``MediaAttachment``: A MediaAttachment object.
+
+        Args:
+            recipient_id: The integer ID of the user to send the message to.
+            item: An item to format and send. See supported types.
+
+        Returns:
+            The message ID returned by the Send API.
+
+        '''
+
+        # Handle strings
+        if isinstance(item, str):
+            message = messages.Message(text=item)
+        # Handle Message objects
+        elif isinstance(item, messages.Message):
+            message = item
+        # Handle Template objects
+        elif isinstance(item, messages.Template):
+            message = messages.Message(attachment=item)
+        # Handle MediaAttachment objects
+        elif isinstance(item, messages.MediaAttachment):
+            message = messages.Message(attachment=item)
+
+        # Send the created Message object and return the resulting message ID.
+        return await self.send_message(recipient_id, message)
+
+    async def send_message(self, recipient_id, message):
         '''Sends a message to the given recipient using the Send API.
 
         Args:
@@ -252,10 +348,9 @@ class Messenger:
             action: One of 'typing_on', 'typing_off', or 'mark_seen'.
 
         Returns:
-            The message ID returned by the Send API.
+            True if the action was successfully sent.
 
         '''
-
         if action not in ['typing_on', 'typing_off', 'mark_seen']:
             error = ("Action must be one of 'typing_on', 'typing_off',"
                      "or 'mark_seen', not {0}".format(action))
@@ -268,8 +363,8 @@ class Messenger:
         async with aiohttp.ClientSession(loop=self._event_loop) as session:
             response = await self.post(session, json_message)
 
-        if 'message_id' in response:
-            return response['message_id']
+        if 'recipient_id' in response:
+            return True
         else:
             self.handle_api_error(response)
 
@@ -301,7 +396,7 @@ class Messenger:
             The message ID returned by the Send API.
 
         '''
-        return await self.send(message_received.user_id, response)
+        return await self.send_message(message_received.user_id, response)
 
     async def host_attachment(self, media_type, filename):
         '''Hosts the given file on the bot server, returning a MediaAttachment
@@ -430,99 +525,33 @@ class Messenger:
         else:
             return response
 
-    async def message_received(self, message):
-        '''Handles all 'message received' events sent to the bot.
+    def register_handler(self, event, handler_function):
+        '''Registers the given function to handle a specific event. When the event is
+        triggered on the webhook, the function will be called.
 
         Args:
-            message: A MessageReceived object containing the received message.
+            event: The event type, like events.MESSAGE_RECEIVED
 
         Returns:
-            None. The message should be completely handled within this
-            function.
-
+            None
         '''
-        print('Handling received message')
+        if event not in self._handlers:
+            self._handlers[event] = []
 
-    async def message_delivered(self, message_delivered):
-        '''Handles all 'message delivered' events sent to the bot.
+        self._handlers[event].append(handler_function)
+
+    def handle(self, event):
+        '''A decorator which registers a function to handle the given event.
 
         Args:
-            message_delivered: A MessageDelivered object containing the
-                               received message.
+            event: The event type, like events.MESSAGE_RECEIVED
 
         Returns:
-            None. The message should be completely handled within this
-            function.
+            The original handler function.
 
         '''
-        print('Handling delivered message')
+        def registered_handler(handler_function):
+            self.register_handler(event, handler_function)
+            return handler_function
 
-    async def message_read(self, message_read):
-        '''Handles all 'message read' events sent to the bot.
-
-        Args:
-            message_read: A MessageRead object containing the
-                          received message.
-
-        Returns:
-            None. The message should be completely handled within this
-            function.
-
-        '''
-        print('Handling read message')
-
-    async def postback(self, postback):
-        '''Handles all 'postback' events sent to the bot.
-
-        Args:
-            postback: A Postback object containing the
-                      received message.
-
-        Returns:
-            None. The message should be completely handled within this
-            function.
-
-        '''
-        print('Handling postback')
-
-    async def referral(self, referral):
-        '''Handles all 'referral' events sent to the bot.
-
-        Args:
-            referral: A Referral object containing the
-                      received message.
-
-        Returns:
-            None. The message should be completely handled within this
-            function.
-
-        '''
-        print('Handling referral')
-
-    async def opt_in(self, opt_in):
-        '''Handles all 'opt in' events sent to the bot.
-
-        Args:
-            opt_in: An OptIn object containing the
-                    received message.
-
-        Returns:
-            None. The message should be completely handled within this
-            function.
-
-        '''
-        print('Handling opt in')
-
-    async def account_link(self, account_link):
-        '''Handles all 'account linking' events sent to the bot.
-
-        Args:
-            opt_in: An AccountLink object containing the
-                    received message.
-
-        Returns:
-            None. The message should be completely handled within this
-            function.
-
-        '''
-        print('Handling account linking')
+        return registered_handler
