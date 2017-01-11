@@ -2,6 +2,15 @@
 History
 =======
 
+0.6.0 (12-2-2017)
+-----------------
+
+- **BREAKING CHANGE:** Handler functions are no longer overridden in the
+  ``Messenger`` class; instead, the ``@app.handle`` decorator is used. See the
+  documentation for more details.
+- Handler functions can now simply return responses in a variety of formats,
+  which are interpreted and sent as a reply.
+
 0.5.0 (5-2-2017)
 ----------------
 
