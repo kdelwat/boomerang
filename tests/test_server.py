@@ -504,6 +504,16 @@ async def test_handle_event(bot, monkeypatch):
     assert result['called']
 
 
+def test_handler_registration(bot):
+    '''Tests the handle decorator and register_handle function.'''
+
+    @bot.handle(MESSAGE_RECEIVED)
+    async def mock_handler(message):
+        pass
+
+    assert bot._handlers[MESSAGE_RECEIVED] == [mock_handler]
+
+
 def message_handled_ok(server, message_type, message_content):
     '''Makes a POST request to the server, simulating the given message being
     sent, and ensure the server responds with a 200 OK status.
