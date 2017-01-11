@@ -124,6 +124,60 @@ async def test_get(bot, monkeypatch, event_loop):
     assert response == test_json
 
 
+def test_is_sequence(bot):
+    '''Tests the is_sequence() method.'''
+
+    assert bot.is_sequence([])
+    assert bot.is_sequence(())
+    assert bot.is_sequence(['1', '2', '3'])
+    assert bot.is_sequence([1, 2, 3])
+
+    assert not bot.is_sequence('string')
+    assert not bot.is_sequence(1)
+
+
+@pytest.mark.asyncio
+async def test_send_string(bot, monkeypatch):
+    '''Tests the send() method when called with a string.'''
+
+    result = {}
+
+    test_string = 'dummy_string'
+    test_recipient = 123
+
+    # Mock send_message() to ensure the request is correct
+    async def mock_send_message(recipient_id, message):
+        result['valid'] = (message.text == test_string and recipient_id ==
+                           test_recipient)
+
+    monkeypatch.setattr(bot, 'send_message', mock_send_message)
+
+    await bot.send(test_recipient, test_string)
+
+    assert result['valid']
+
+
+@pytest.mark.asyncio
+async def test_send_message_object(bot, monkeypatch):
+    '''Tests the send() method when called with a Message object.'''
+
+    result = {}
+
+    test_message = Message(text='dummy_text')
+    test_recipient = 123
+
+    # Mock send_message() to ensure the request is correct
+    async def mock_send_message(recipient_id, message):
+        result['valid'] = (message == test_message and recipient_id ==
+                           test_recipient)
+
+    monkeypatch.setattr(bot, 'send_message', mock_send_message)
+
+    await bot.send(test_recipient, test_message)
+
+    assert result['valid']
+
+
 @pytest.mark.asyncio
 async def test_send_message(bot, monkeypatch):
     '''Tests the send_message() function, checking that the desired
@@ -518,6 +572,64 @@ def test_handler_registration(bot):
         pass
 
     assert bot._handlers[MESSAGE_RECEIVED] == [mock_handler]
+
+
+@pytest.mark.asyncio
+async def test_handler_return(bot, monkeypatch):
+    '''Tests that handler functions can return objects, which are sent.'''
+
+    @bot.handle(MESSAGE_RECEIVED)
+    async def mock_handler(message):
+        return 'dummy_text'
+
+    result = {}
+
+    # Mock send() to ensure the response is correct
+    async def mock_send(recipient_id, item):
+        result['valid'] = (item == 'dummy_text' and recipient_id == 123)
+
+    monkeypatch.setattr(bot, 'send', mock_send)
+
+    # Simulate a MessageReceived event
+    json_data = {'mid': 'mid.1482375186449:88d829fb30',
+                 'seq': 426185,
+                 'text': 'ping'}
+    message_received_event = MessageReceived.from_json(123, 1234567890,
+                                                       json_data)
+    await bot.handle_event(MESSAGE_RECEIVED, message_received_event)
+
+    assert result['valid']
+
+
+@pytest.mark.asyncio
+async def test_handler_return_sequence(bot, monkeypatch):
+    '''Tests that handler functions can return a sequnce of objects, which are
+    each sent.'''
+
+    @bot.handle(MESSAGE_RECEIVED)
+    async def mock_handler(message):
+        return ['dummy_text'] * 5
+
+    result = {'called': 0}
+
+    # Mock send() to count number of valid calls
+    async def mock_send(recipient_id, item):
+        if item == 'dummy_text' and recipient_id == 123:
+            result['called'] += 1
+
+    monkeypatch.setattr(bot, 'send', mock_send)
+
+    # Simulate a MessageReceived event
+    json_data = {'mid': 'mid.1482375186449:88d829fb30',
+                 'seq': 426185,
+                 'text': 'ping'}
+    message_received_event = MessageReceived.from_json(123, 1234567890,
+                                                       json_data)
+    await bot.handle_event(MESSAGE_RECEIVED, message_received_event)
+
+    # Ensure that send() was called one time for each response in the returned
+    # list
+    assert result['called'] == 5
 
 
 def message_handled_ok(server, message_type, message_content):

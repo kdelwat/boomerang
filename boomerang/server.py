@@ -3,6 +3,7 @@ import json
 import aiohttp
 import hashlib
 import functools
+import collections
 
 from sanic import Sanic
 from sanic.log import log
@@ -167,7 +168,8 @@ class Messenger:
         return response.text('Success', status=200)
 
     async def handle_event(self, event_type, event):
-        '''Calls each handler of the given event_type with the event object.
+        '''Calls each handler of the given event_type with the event object,
+        collecting their responses. Then sends all relevant responses.
 
         Args:
             event_type: The event type constant, like events.POSTBACK.
@@ -178,15 +180,45 @@ class Messenger:
 
         '''
         log.info('Handling event with type: {0}'.format(event_type))
+
         # If the event type has no handlers, exit early
         if event_type not in self._handlers:
             log.warn('No handlers available for the given event')
             return
 
+        # Collect non-None responses from each handler function
+        responses = []
         for handler_function in self._handlers[event_type]:
-            await handler_function(event)
+            responses.append(await handler_function(event))
+
+        responses = [x for x in responses if x is not None]
+
+        # Send responses
+        recipient_id = event.user_id
+
+        for item in [x for x in responses if self.is_sequence(x)]:
+            # Responses that are sequences are looped through, and each
+            # individual item is sent.
+            for individual_response in item:
+                log.info('Sending {0}...'.format(item))
+                await self.send(recipient_id, individual_response)
+
+        for item in [x for x in responses if not self.is_sequence(x)]:
+            log.info('Sending {0}...'.format(item))
+            await self.send(recipient_id, item)
 
         log.info('Successfully handled event')
+
+    @staticmethod
+    def is_sequence(x):
+        '''Returns True if the item is a sequence but isn't a string,
+        otherwise returns False.
+
+        '''
+        if isinstance(x, str):
+            return False
+        else:
+            return isinstance(x, collections.Sequence)
 
     def handle_api_error(self, error_json):
         '''Wraps the error JSON returned by Facebook in a
@@ -248,6 +280,34 @@ class Messenger:
         '''
         async with session.get(url) as response:
             return await response.json()
+
+    async def send(self, recipient_id, item):
+        '''Infers the desired object to send based on the type of the given
+        parameter, then sends such an object to the given recipient.
+
+        Supported types and corresponding objects sent:
+
+        * ``str``: A Message containing the string.
+        * ``Message``: A Message object.
+
+        Args:
+            recipient_id: The integer ID of the user to send the message to.
+            item: An item to format and send. See supported types.
+
+        Returns:
+            The message ID returned by the Send API.
+
+        '''
+
+        # Handle strings
+        if isinstance(item, str):
+            message = messages.Message(text=item)
+        # Handle Message objects
+        elif isinstance(item, messages.Message):
+            message = item
+
+        # Send the created Message object and return the resulting message ID.
+        return await self.send_message(recipient_id, message)
 
     async def send_message(self, recipient_id, message):
         '''Sends a message to the given recipient using the Send API.
