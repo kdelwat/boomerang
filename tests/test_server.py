@@ -203,8 +203,7 @@ async def test_send_action(bot, monkeypatch):
     '''Tests the send_action() function, checking that the desired
     message ID is returned.'''
 
-    response_json = {'recipient_id': 123,
-                     'message_id': 'dummy_message_id'}
+    response_json = {'recipient_id': 123}
 
     # Monkeypatch the Messenger.post method to return the desired
     # JSON
@@ -213,8 +212,8 @@ async def test_send_action(bot, monkeypatch):
 
     monkeypatch.setattr(bot, 'post', mock_post)
 
-    # Ensure the response's message ID is correctly handled
-    assert await bot.send_action(123, 'typing_on') == 'dummy_message_id'
+    # Ensure the response is correctly handled
+    assert await bot.send_action(123, 'typing_on')
 
 
 @pytest.mark.asyncio

@@ -280,7 +280,7 @@ class Messenger:
             action: One of 'typing_on', 'typing_off', or 'mark_seen'.
 
         Returns:
-            The message ID returned by the Send API.
+            True if the action was successfully sent.
 
         '''
         if action not in ['typing_on', 'typing_off', 'mark_seen']:
@@ -296,7 +296,7 @@ class Messenger:
             response = await self.post(session, json_message)
 
         if 'recipient_id' in response:
-            return response['recipient_id']
+            return True
         else:
             self.handle_api_error(response)
 
