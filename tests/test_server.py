@@ -125,8 +125,8 @@ async def test_get(bot, monkeypatch, event_loop):
 
 
 @pytest.mark.asyncio
-async def test_send(bot, monkeypatch):
-    '''Tests the send() function, checking that the desired
+async def test_send_message(bot, monkeypatch):
+    '''Tests the send_message() function, checking that the desired
     message ID is returned.'''
 
     message = Message(text='dummy_text')
@@ -141,12 +141,12 @@ async def test_send(bot, monkeypatch):
     monkeypatch.setattr(bot, 'post', mock_post)
 
     # Ensure the response's message ID is correctly handled
-    assert await bot.send(123, message) == 'dummy_message_id'
+    assert await bot.send_message(123, message) == 'dummy_message_id'
 
 
 @pytest.mark.asyncio
-async def test_send_error(bot, monkeypatch):
-    '''Tests the send() function, when the Send API returns an error.'''
+async def test_send_message_error(bot, monkeypatch):
+    '''Tests the send_message() function, when the Send API returns an error.'''
 
     message = Message(text='dummy_text')
     response_json = {'error': {'message': 'Too many send requests to phone numbers',
@@ -164,7 +164,7 @@ async def test_send_error(bot, monkeypatch):
 
     # Ensure the response is returned verbatim
     with pytest.raises(MessengerAPIException):
-        await bot.send(123, message) == response_json
+        await bot.send_message(123, message) == response_json
 
 
 @pytest.mark.asyncio
@@ -258,12 +258,12 @@ async def test_respond_to(bot, monkeypatch):
     # Create a response Message
     response = Message(text='dummy_text')
 
-    # Mock the send() function to record arguments it receives
-    async def mock_send(recipient_id, message):
+    # Mock the send_message() function to record arguments it receives
+    async def mock_send_message(recipient_id, message):
         result['recipient_id'] = recipient_id
         result['message'] = message
 
-    monkeypatch.setattr(bot, 'send', mock_send)
+    monkeypatch.setattr(bot, 'send_message', mock_send_message)
 
     # Ensure respond_to calls send() with the appropriate arguments
     await bot.respond_to(message_received_event, response)

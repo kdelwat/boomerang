@@ -249,7 +249,7 @@ class Messenger:
         async with session.get(url) as response:
             return await response.json()
 
-    async def send(self, recipient_id, message):
+    async def send_message(self, recipient_id, message):
         '''Sends a message to the given recipient using the Send API.
 
         Args:
@@ -328,7 +328,7 @@ class Messenger:
             The message ID returned by the Send API.
 
         '''
-        return await self.send(message_received.user_id, response)
+        return await self.send_message(message_received.user_id, response)
 
     async def host_attachment(self, media_type, filename):
         '''Hosts the given file on the bot server, returning a MediaAttachment
